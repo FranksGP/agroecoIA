@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroEco Lab — Análisis de Suelos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2333;
+  --border:#30363d;--border2:#21262d;
+  --text:#e6edf3;--text2:#8b949e;--text3:#484f58;
+  --green:#3fb950;--green-dim:#1a3a24;
+  --yellow:#d29922;--yellow-dim:#3d2e0a;
+  --red:#f85149;--red-dim:#3d1212;
+  --blue:#58a6ff;--purple:#bc8cff;
+  --accent:#39d353;--accent2:#00d5a3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;overflow-x:hidden}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border2);display:flex;flex-direction:column;z-index:100}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border2)}
+.sidebar-logo h1{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px}
+.sidebar-logo span{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);display:block;margin-top:2px}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .15s;border-left:2px solid transparent;user-select:none}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(57,211,83,.05)}
+.nav-icon{width:16px;text-align:center;font-size:14px}
+.sidebar-stats{padding:14px 18px;border-top:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+.sidebar-stats .stat-val{color:var(--accent);font-size:14px;display:block;margin-top:2px}
+.main{margin-left:220px;min-height:100vh;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:90;background:rgba(13,17,23,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);padding:12px 24px;display:flex;align-items:center;gap:12px}
+.topbar-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.btn-primary{background:var(--accent);color:#000;font-weight:600}
+.btn-primary:hover{background:#4dde60}
+.btn-sm{padding:4px 10px;font-size:11px}
+.content{flex:1;padding:24px}
+.view{display:none}.view.active{display:block}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.kpi-card{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:16px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi-card.green::before{background:var(--green)}.kpi-card.yellow::before{background:var(--yellow)}
+.kpi-card.red::before{background:var(--red)}.kpi-card.blue::before{background:var(--blue)}
+.kpi-card.purple::before{background:var(--purple)}
+.kpi-label{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px}
+.kpi-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;margin:6px 0 2px}
+.kpi-sub{font-size:11px;color:var(--text2)}
+.kpi-card.green .kpi-val{color:var(--green)}.kpi-card.yellow .kpi-val{color:var(--yellow)}
+.kpi-card.red .kpi-val{color:var(--red)}.kpi-card.blue .kpi-val{color:var(--blue)}
+.kpi-card.purple .kpi-val{color:var(--purple)}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:18px}
+.chart-card.wide{grid-column:1/-1}
+.chart-title{font-family:'Syne',sans-serif;font-weight:600;font-size:13px;margin-bottom:14px;color:var(--text);display:flex;align-items:center;justify-content:space-between}
+.chart-subtitle{font-size:11px;color:var(--text3);font-weight:400}
+.chart-wrap{position:relative;height:220px}
+.stats-table{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;font-size:11px}
+.stats-table th{color:var(--text3);font-weight:400;text-align:left;padding:6px 10px;border-bottom:1px solid var(--border2)}
+.stats-table td{padding:7px 10px;border-bottom:1px solid var(--border2);color:var(--text2)}
+.stats-table td:first-child{color:var(--text)}
+.filter-bar{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:16px}
+.filter-group{display:flex;flex-direction:column;gap:4px;min-width:150px}
+.filter-group.wide{min-width:220px}
+.filter-label{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase}
+.filter-input,select.filter-input{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:6px 10px;color:var(--text);font-size:12px;outline:none;font-family:'Inter',sans-serif;transition:border-color .15s}
+.filter-input:focus{border-color:var(--accent)}
+select.filter-input option{background:var(--bg2)}
+.range-inputs{display:flex;gap:6px;align-items:center}
+.range-inputs span{color:var(--text3);font-size:11px}
+.table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border2)}
+table.data-table{width:100%;border-collapse:collapse;font-size:12px}
+table.data-table th{background:var(--bg2);color:var(--text3);font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border2);white-space:nowrap;position:sticky;top:0;cursor:pointer;user-select:none}
+table.data-table th:hover{color:var(--text)}
+table.data-table td{padding:9px 12px;border-bottom:1px solid var(--border2);color:var(--text2);white-space:nowrap}
+table.data-table td:first-child{color:var(--text);font-family:'DM Mono',monospace;font-size:11px}
+table.data-table tr:hover td{background:var(--bg2)}
+table.data-table tr:last-child td{border-bottom:none}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;font-family:'DM Mono',monospace}
+.badge-optimal{background:var(--green-dim);color:var(--green)}
+.badge-medio{background:var(--yellow-dim);color:var(--yellow)}
+.badge-critico{background:var(--red-dim);color:var(--red)}
+.badge-nodata{background:var(--bg3);color:var(--text3)}
+.pagination{display:flex;align-items:center;gap:4px;justify-content:center;padding:16px 0}
+.pg-btn{padding:5px 10px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:12px;transition:all .15s}
+.pg-btn:hover{background:var(--bg3);color:var(--text)}
+.pg-btn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+.pg-btn:disabled{opacity:.3;cursor:not-allowed}
+.pg-info{color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;padding:0 8px}
+.modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;width:820px;max-width:96vw;max-height:92vh;overflow-y:auto;animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px 22px}
+.modal-section-title{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--text3);letter-spacing:1px;margin-bottom:10px;margin-top:18px}
+.modal-section-title:first-child{margin-top:0}
+.props-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.prop-item{background:var(--bg3);border-radius:6px;padding:8px 10px}
+.prop-key{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+.prop-val{font-size:13px;color:var(--text);margin-top:2px}
+.rec-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.rec-list li{padding:10px 14px;border-radius:6px;font-size:12px;line-height:1.5;display:flex;align-items:flex-start;gap:8px}
+.rec-list li.rec{background:rgba(57,211,83,.07);border-left:2px solid var(--green);color:var(--text)}
+.rec-list li.alert{background:rgba(248,81,73,.07);border-left:2px solid var(--red);color:var(--text)}
+.rec-list li .ri{font-size:14px;flex-shrink:0;margin-top:1px}
+.rec-list li.rec .ri{color:var(--green)}.rec-list li.alert .ri{color:var(--red)}
+
+/* Triángulo textural */
+.triangle-wrap{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.triangle-svg-box{flex-shrink:0}
+.triangle-info{flex:1;min-width:190px}
+.tex-bar{display:flex;height:24px;border-radius:6px;overflow:hidden;gap:2px;margin:10px 0 5px}
+.tex-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:#000;min-width:0;transition:width .4s}
+.tex-legend{display:flex;gap:12px}
+.tex-legend span{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:4px}
+.tex-legend .dot{width:8px;height:8px;border-radius:2px;display:inline-block;flex-shrink:0}
+
+/* Predictor */
+.predictor-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.pred-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pred-input-group{display:flex;flex-direction:column;gap:4px}
+.pred-input-group label{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase}
+.pred-result{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;text-align:center}
+.pred-result-label{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase}
+.pred-result-val{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;margin:8px 0 2px}
+.pred-result-val.optimal{color:var(--green)}.pred-result-val.medio{color:var(--yellow)}.pred-result-val.critico{color:var(--red)}
+.pred-soil-type{font-family:'DM Mono',monospace;font-size:13px;color:var(--accent2);margin-bottom:4px}
+.prob-bars{width:100%;margin-top:12px}
+.prob-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.prob-bar-label{font-size:11px;color:var(--text2);width:60px;text-align:right}
+.prob-bar-track{flex:1;background:var(--bg3);border-radius:20px;height:8px;overflow:hidden}
+.prob-bar-fill{height:100%;border-radius:20px;transition:width .5s ease}
+.prob-bar-pct{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);width:40px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state{display:flex;align-items:center;gap:10px;color:var(--text3);padding:40px;justify-content:center}
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;transform:translateY(100px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}
+.empty-state{padding:60px;text-align:center;color:var(--text3)}
+.empty-state .emoji{font-size:40px;margin-bottom:12px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:18px}
+.section-count{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3)}
+.divider{border:none;border-top:1px solid var(--border2);margin:16px 0}
+.text-mono{font-family:'DM Mono',monospace}
+.tag{display:inline-block;padding:1px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+@media(max-width:900px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.chart-grid{grid-template-columns:1fr}.predictor-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>🌱 AgroEco Lab</h1>
+    <span>v2.0 · Sistema de Análisis</span>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-item active" onclick="switchView('dashboard')" data-view="dashboard"><span class="nav-icon">⬡</span> Dashboard</div>
+    <div class="nav-item" onclick="switchView('data')" data-view="data"><span class="nav-icon">⊞</span> Datos</div>
+    <div class="nav-item" onclick="switchView('predictor')" data-view="predictor"><span class="nav-icon">◈</span> Predictor IA</div>
+  </div>
+  <div class="sidebar-stats">
+    <div>TOTAL MUESTRAS</div><span class="stat-val" id="sidebar-total">—</span>
+    <div style="margin-top:8px">PRECISIÓN MODELO</div><span class="stat-val" id="sidebar-acc">—</span>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">Dashboard General</span>
+    <div class="topbar-right"><button class="btn btn-ghost btn-sm" onclick="exportData()">⬇ Exportar CSV</button></div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="section-header"><h2 class="section-title">Resumen Agroecológico</h2><span class="section-count" id="dash-date">Cargando...</span></div>
+      <div class="kpi-grid">
+        <div class="kpi-card blue"><div class="kpi-label">Total Muestras</div><div class="kpi-val" id="kpi-total">—</div><div class="kpi-sub">Registros en base de datos</div></div>
+        <div class="kpi-card green"><div class="kpi-label">Estado Óptimo</div><div class="kpi-val" id="kpi-optimal">—</div><div class="kpi-sub" id="kpi-optimal-pct">del total</div></div>
+        <div class="kpi-card yellow"><div class="kpi-label">Estado Medio</div><div class="kpi-val" id="kpi-medio">—</div><div class="kpi-sub" id="kpi-medio-pct">del total</div></div>
+        <div class="kpi-card red"><div class="kpi-label">Estado Crítico</div><div class="kpi-val" id="kpi-critico">—</div><div class="kpi-sub" id="kpi-critico-pct">del total</div></div>
+        <div class="kpi-card purple"><div class="kpi-label">pH Promedio</div><div class="kpi-val" id="kpi-ph">—</div><div class="kpi-sub">Reacción del suelo</div></div>
+        <div class="kpi-card green"><div class="kpi-label">MO Promedio</div><div class="kpi-val" id="kpi-mo">—</div><div class="kpi-sub">% Materia orgánica</div></div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-card"><div class="chart-title">Distribución de pH <span class="chart-subtitle">Acidez del suelo</span></div><div class="chart-wrap"><canvas id="chart-ph"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Estado de Muestras <span class="chart-subtitle">Clasificación IA</span></div><div class="chart-wrap"><canvas id="chart-estado"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Top Cultivos <span class="chart-subtitle">Por frecuencia</span></div><div class="chart-wrap"><canvas id="chart-cultivos"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Materia Orgánica <span class="chart-subtitle">Distribución %</span></div><div class="chart-wrap"><canvas id="chart-mo"></canvas></div></div>
+        <div class="chart-card wide"><div class="chart-title">Tendencia Temporal <span class="chart-subtitle">Muestras por año</span></div><div class="chart-wrap"><canvas id="chart-trend"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Textura del Suelo <span class="chart-subtitle">Tipos principales</span></div><div class="chart-wrap"><canvas id="chart-textura"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Top Municipios <span class="chart-subtitle">Por muestra</span></div><div class="chart-wrap"><canvas id="chart-mun"></canvas></div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Estadísticas Numéricas Clave</div>
+        <table class="stats-table"><thead><tr><th>Parámetro</th><th>Mín</th><th>Q25</th><th>Mediana</th><th>Media</th><th>Q75</th><th>Máx</th><th>Desv. Est.</th></tr></thead><tbody id="stats-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- DATOS -->
+    <div class="view" id="view-data">
+      <div class="section-header"><h2 class="section-title">Base de Datos</h2><span class="section-count" id="data-count">Cargando...</span></div>
+      <div class="filter-bar">
+        <div class="filter-group wide"><label class="filter-label">Buscar</label><input type="text" class="filter-input" id="f-search" placeholder="Código, cultivo, municipio..." oninput="debounceFilter()"></div>
+        <div class="filter-group"><label class="filter-label">Cultivo</label><select class="filter-input" id="f-cultivo" onchange="applyFilters()"><option value="all">Todos</option></select></div>
+        <div class="filter-group"><label class="filter-label">Municipio</label><select class="filter-input" id="f-municipio" onchange="applyFilters()"><option value="all">Todos</option></select></div>
+        <div class="filter-group"><label class="filter-label">Tipo Suelo</label><select class="filter-input" id="f-tipo-suelo" onchange="applyFilters()"><option value="all">Todos</option></select></div>
+        <div class="filter-group"><label class="filter-label">Estado</label><select class="filter-input" id="f-estado" onchange="applyFilters()"><option value="all">Todos</option><option value="Óptimo">Óptimo</option><option value="Medio">Medio</option><option value="Crítico">Crítico</option></select></div>
+        <div class="filter-group"><label class="filter-label">pH (rango)</label><div class="range-inputs"><input type="number" class="filter-input" id="f-ph-min" placeholder="Min" step="0.1" style="width:70px" oninput="debounceFilter()"><span>—</span><input type="number" class="filter-input" id="f-ph-max" placeholder="Max" step="0.1" style="width:70px" oninput="debounceFilter()"></div></div>
+        <div class="filter-group"><label class="filter-label">MO % (rango)</label><div class="range-inputs"><input type="number" class="filter-input" id="f-mo-min" placeholder="Min" step="0.1" style="width:70px" oninput="debounceFilter()"><span>—</span><input type="number" class="filter-input" id="f-mo-max" placeholder="Max" step="0.1" style="width:70px" oninput="debounceFilter()"></div></div>
+        <div class="filter-group" style="justify-content:flex-end"><button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕ Limpiar</button></div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Código</th><th>Cultivo</th><th>Municipio</th><th>pH</th><th>MO%</th><th>P disp.</th><th>Al meq</th><th>CE dS/m</th><th>Tipo Suelo</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+          <tbody id="data-tbody"><tr><td colspan="12"><div class="loading-state"><div class="spinner"></div> Cargando datos...</div></td></tr></tbody>
+        </table>
+      </div>
+      <div id="pagination" class="pagination"></div>
+    </div>
+
+    <!-- PREDICTOR -->
+    <div class="view" id="view-predictor">
+      <div class="section-header"><h2 class="section-title">Predictor IA de Estado</h2><span class="section-count" id="model-info">Random Forest</span></div>
+      <div class="predictor-grid">
+        <div>
+          <div class="chart-card">
+            <div class="chart-title">Parámetros del Suelo</div>
+            <div class="pred-inputs">
+              <div class="pred-input-group"><label>pH</label><input type="number" class="filter-input" id="p-ph" placeholder="ej: 6.2" step="0.1" min="3" max="10"></div>
+              <div class="pred-input-group"><label>MO (%)</label><input type="number" class="filter-input" id="p-mo" placeholder="ej: 3.5" step="0.1"></div>
+              <div class="pred-input-group"><label>P disponible (ppm)</label><input type="number" class="filter-input" id="p-p" placeholder="ej: 45" step="1"></div>
+              <div class="pred-input-group"><label>Ca meq/100g</label><input type="number" class="filter-input" id="p-ca" placeholder="ej: 8.0" step="0.1"></div>
+              <div class="pred-input-group"><label>Mg meq/100g</label><input type="number" class="filter-input" id="p-mg" placeholder="ej: 2.5" step="0.1"></div>
+              <div class="pred-input-group"><label>K meq/100g</label><input type="number" class="filter-input" id="p-k" placeholder="ej: 0.8" step="0.1"></div>
+              <div class="pred-input-group"><label>Al meq/100g</label><input type="number" class="filter-input" id="p-al" placeholder="ej: 0.2" step="0.01"></div>
+              <div class="pred-input-group"><label>CE dS/m</label><input type="number" class="filter-input" id="p-ce" placeholder="ej: 1.2" step="0.1"></div>
+              <div class="pred-input-group"><label>N total (%)</label><input type="number" class="filter-input" id="p-n" placeholder="ej: 0.25" step="0.01"></div>
+              <div class="pred-input-group"><label>C orgánico (%)</label><input type="number" class="filter-input" id="p-c" placeholder="ej: 1.5" step="0.1"></div>
+              <div class="pred-input-group"><label>Fe (ppm)</label><input type="number" class="filter-input" id="p-fe" placeholder="ej: 12.0" step="0.1"></div>
+              <div class="pred-input-group"><label>Zn (ppm)</label><input type="number" class="filter-input" id="p-zn" placeholder="ej: 3.5" step="0.1"></div>
+              <div class="pred-input-group"><label>Mn (ppm)</label><input type="number" class="filter-input" id="p-mn" placeholder="ej: 10.0" step="0.1"></div>
+              <div class="pred-input-group"><label>B (ppm)</label><input type="number" class="filter-input" id="p-b" placeholder="ej: 0.5" step="0.01"></div>
+              <div class="pred-input-group"><label>Na meq/100g</label><input type="number" class="filter-input" id="p-na" placeholder="ej: 0.3" step="0.01"></div>
+              <div class="pred-input-group"><label>Densidad aparente</label><input type="number" class="filter-input" id="p-da" placeholder="ej: 1.1" step="0.01"></div>
+              <div class="pred-input-group"><label>Arena (%)</label><input type="number" class="filter-input" id="p-arena" placeholder="ej: 40" step="1" min="0" max="100" oninput="updatePredTriangle()"></div>
+              <div class="pred-input-group"><label>Limo (%)</label><input type="number" class="filter-input" id="p-limo" placeholder="ej: 30" step="1" min="0" max="100" oninput="updatePredTriangle()"></div>
+              <div class="pred-input-group"><label>Arcilla (%)</label><input type="number" class="filter-input" id="p-arcilla" placeholder="ej: 30" step="1" min="0" max="100" oninput="updatePredTriangle()"></div>
+            </div>
+            <div class="pred-input-group" style="margin-top:10px">
+              <label>Cultivo</label>
+              <select class="filter-input" id="p-cultivo">
+                <option value="general">General / No especificado</option>
+                <option value="rosas">Rosas</option><option value="tomate">Tomate</option>
+                <option value="papa">Papa</option><option value="maíz">Maíz</option>
+                <option value="caña panelera">Caña Panelera</option><option value="caña">Caña</option>
+                <option value="aguacate">Aguacate</option><option value="mango">Mango</option>
+                <option value="cacao">Cacao</option><option value="frijol">Frijol</option>
+                <option value="fresas">Fresas</option><option value="limón">Limón / Cítricos</option>
+                <option value="platano">Plátano / Banano</option><option value="cebolla">Cebolla</option>
+                <option value="ajo">Ajo</option><option value="maracuya">Maracuyá</option>
+                <option value="piña">Piña</option><option value="arandano">Arándano</option>
+                <option value="hortalizas">Hortalizas</option><option value="pastos">Pastos</option>
+                <option value="caucho">Caucho</option><option value="aromáticas">Aromáticas</option>
+                <option value="marañon">Marañón</option>
+              </select>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:8px">
+              <button class="btn btn-primary" onclick="runPrediction()" style="flex:1">◈ Predecir Estado</button>
+              <button class="btn btn-ghost" onclick="getLocalRecs()">✦ Recomendaciones</button>
+            </div>
+          </div>
+
+          <!-- Triángulo del predictor -->
+          <div class="chart-card" style="margin-top:16px">
+            <div class="chart-title">🪨 Triángulo Textural USDA <span class="chart-subtitle" id="pred-soil-label">Ingresa arena, limo y arcilla</span></div>
+            <div class="triangle-wrap">
+              <div class="triangle-svg-box"><svg id="pred-tri-svg" width="270" height="248"></svg></div>
+              <div class="triangle-info" id="pred-tri-info" style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;line-height:1.8">
+                Ingresa los porcentajes de<br>arena, limo y arcilla para<br>visualizar la textura.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="pred-result" id="pred-result">
+            <span style="font-size:40px">◈</span>
+            <div class="pred-result-label" style="margin-top:10px">Ingresa los datos y presiona Predecir</div>
+          </div>
+          <div class="chart-card" id="pred-recs-card" style="margin-top:16px;display:none">
+            <div class="chart-title">✦ Recomendaciones Generadas</div>
+            <ul class="rec-list" id="pred-rec-list"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="modal-title">Detalle de Muestra</div><span class="tag" id="modal-cod"></span></div>
+      <button class="modal-close" onclick="closeModalBtn()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"><div class="loading-state"><div class="spinner"></div> Cargando...</div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// TRIÁNGULO TEXTURAL SVG
+// ═══════════════════════════════════════════════
+const NS = 'http://www.w3.org/2000/svg';
+
+function mkEl(tag, attrs) {
+  const el = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function mkLine(x1,y1,x2,y2,stroke,sw,dash=''){
+  return mkEl('line',{x1,y1,x2,y2,stroke,'stroke-width':sw,...(dash?{'stroke-dasharray':dash}:{})});
+}
+
+function mkText(x,y,txt,style){
+  const t = mkEl('text',{x,y,style});
+  t.textContent = txt; return t;
+}
+
+// Vértices (arena=bottom-left, limo=bottom-right, arcilla=top)
+function getVertices(W,H,pad){
+  return {
+    sand: {x:pad,       y:H+pad},
+    silt: {x:W+pad,     y:H+pad},
+    clay: {x:W/2+pad,   y:pad}
+  };
+}
+
+function lerp2(a,b,t){ return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t}; }
+
+// Convierte (arena%,limo%,arcilla%) → coordenada SVG dentro del triángulo
+function triCoord(sand,silt,clay,verts){
+  const tot=sand+silt+clay;
+  if(tot===0) return null;
+  const a=sand/tot, si=silt/tot, c=clay/tot;
+  return {
+    x: verts.sand.x + a*(verts.silt.x-verts.sand.x) + c*(verts.clay.x-verts.sand.x),
+    y: verts.sand.y + a*(verts.silt.y-verts.sand.y) + c*(verts.clay.y-verts.sand.y)
+  };
+}
+
+function buildTriangle(svgEl, arena, limo, arcilla){
+  const W=220,H=190,pad=22;
+  const TW=W+pad*2, TH=H+pad*2+14;
+  svgEl.setAttribute('viewBox',`0 0 ${TW} ${TH}`);
+  svgEl.setAttribute('width',TW);
+  svgEl.setAttribute('height',TH);
+  svgEl.innerHTML='';
+
+  const V = getVertices(W,H,pad);
+
+  // Fondo
+  const bg=mkEl('polygon',{
+    points:`${V.sand.x},${V.sand.y} ${V.silt.x},${V.silt.y} ${V.clay.x},${V.clay.y}`,
+    fill:'rgba(22,27,34,0.95)',stroke:'#30363d','stroke-width':'1.5'
+  });
+  svgEl.appendChild(bg);
+
+  // Grilla cada 10%
+  for(let i=1;i<10;i++){
+    const t=i/10;
+    // Horizontales (paralelas al borde arena-limo = líneas de arcilla constante)
+    const h1=lerp2(V.sand,V.clay,t), h2=lerp2(V.silt,V.clay,t);
+    svgEl.appendChild(mkLine(h1.x,h1.y,h2.x,h2.y,'rgba(255,255,255,0.055)',0.8));
+    // Líneas de arena constante
+    const s1=lerp2(V.sand,V.silt,t), s2=lerp2(V.clay,V.silt,t);
+    svgEl.appendChild(mkLine(s1.x,s1.y,s2.x,s2.y,'rgba(255,255,255,0.055)',0.8));
+    // Líneas de limo constante
+    const l1=lerp2(V.silt,V.sand,t), l2=lerp2(V.clay,V.sand,t);
+    svgEl.appendChild(mkLine(l1.x,l1.y,l2.x,l2.y,'rgba(255,255,255,0.055)',0.8));
+  }
+
+  // Etiquetas de escala (10,20,...,90%)
+  const tickStyle='font-family:DM Mono,monospace;font-size:8px;fill:#484f58';
+  for(let i=1;i<=9;i++){
+    const t=i/10, pct=(10-i)*10;
+    // Arcilla (lado izquierdo)
+    const cp=lerp2(V.sand,V.clay,t);
+    svgEl.appendChild(mkText(cp.x-20,cp.y+3,pct+'%',tickStyle));
+    // Arena (lado inferior)
+    const sp=lerp2(V.sand,V.silt,t);
+    svgEl.appendChild(mkText(sp.x-7,sp.y+13,pct+'%',tickStyle));
+    // Limo (lado derecho)
+    const lp=lerp2(V.silt,V.clay,t);
+    svgEl.appendChild(mkText(lp.x+4,lp.y+3,(100-pct)+'%',tickStyle));
+  }
+
+  // Etiquetas de vértices
+  svgEl.appendChild(mkText(V.sand.x-16,V.sand.y+18,'Arena','font-family:DM Mono,monospace;font-size:10px;fill:#d29922;font-weight:700'));
+  svgEl.appendChild(mkText(V.silt.x-8, V.silt.y+18,'Limo', 'font-family:DM Mono,monospace;font-size:10px;fill:#58a6ff;font-weight:700'));
+  svgEl.appendChild(mkText(V.clay.x-16,V.clay.y-9, 'Arcilla','font-family:DM Mono,monospace;font-size:10px;fill:#f85149;font-weight:700'));
+
+  // Punto de muestra
+  if(arena!=null && limo!=null && arcilla!=null){
+    const tot=arena+limo+arcilla;
+    if(tot>0){
+      const pt=triCoord(arena,limo,arcilla,V);
+      // Líneas de referencia punteadas
+      svgEl.appendChild(mkLine(pt.x,V.sand.y,pt.x,pt.y,'rgba(57,211,83,0.3)',1,'5,3'));
+      svgEl.appendChild(mkLine(V.sand.x,pt.y,pt.x,pt.y,'rgba(57,211,83,0.3)',1,'5,3'));
+      // Halo
+      svgEl.appendChild(mkEl('circle',{cx:pt.x,cy:pt.y,r:11,fill:'rgba(57,211,83,0.12)',stroke:'rgba(57,211,83,0.35)','stroke-width':'1'}));
+      // Punto
+      svgEl.appendChild(mkEl('circle',{cx:pt.x,cy:pt.y,r:5,fill:'#39d353',stroke:'#fff','stroke-width':'1.5'}));
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DATOS DE TEXTURA
+// ═══════════════════════════════════════════════
+function clasificarTextura(arena,limo,arcilla){
+  if(arena==null||limo==null||arcilla==null) return null;
+  const tot=arena+limo+arcilla;
+  if(tot===0) return null;
+  arena=(arena/tot)*100; limo=(limo/tot)*100; arcilla=(arcilla/tot)*100;
+  if(arcilla>=40&&limo<40&&arena<45) return 'Arcilloso';
+  if(arcilla>=40&&limo>=40)          return 'Arcillo Limoso';
+  if(arcilla>=35&&arena>=45)         return 'Arcillo Arenoso';
+  if(arcilla>=27&&arena>=45)         return 'Franco Arcillo Arenoso';
+  if(arcilla>=27&&limo>=40)          return 'Franco Arcillo Limoso';
+  if(arcilla>=27)                    return 'Franco Arcilloso';
+  if(limo>=80&&arcilla<12)           return 'Limoso';
+  if(limo>=50&&arcilla<27)           return 'Franco Limoso';
+  if(arena>=85)                      return 'Arenoso';
+  if(arena>=70&&arcilla<15)          return 'Arena Franca';
+  if(arena>=55&&arcilla<20)          return 'Franco Arenoso';
+  return 'Franco';
+}
+
+function getInfoTextura(tipo){
+  const db={
+    'Franco':               {ideal:'⭐ Ideal para la mayoría de cultivos', drenaje:'Moderado',   retencion:'Alta',     labranza:'Fácil',      fertilidad:'Alta',      cultivos:['Maíz','Papa','Tomate','Hortalizas','Frijol','Flores'],     adv:null,                                                          desc:'Suelo equilibrado con buena aireación, retención y labranza.'},
+    'Franco Arcilloso':     {ideal:'✓ Bueno, muy común en Colombia',       drenaje:'Moderado',   retencion:'Alta',     labranza:'Moderada',   fertilidad:'Alta',      cultivos:['Caña','Café','Aguacate','Cacao','Pastos'],                  adv:'Evitar labranza cuando el suelo está húmedo.',                desc:'El más frecuente en la región Andina colombiana.'},
+    'Franco Arenoso':       {ideal:'✓ Aceptable',                          drenaje:'Rápido',     retencion:'Baja',     labranza:'Muy fácil',  fertilidad:'Media',     cultivos:['Zanahoria','Ajo','Cebolla','Sandía','Melón'],               adv:'Fraccionar riegos y fertilizaciones para evitar pérdidas.',   desc:'Liviano con buena aireación pero baja retención.'},
+    'Franco Arcillo Arenoso':{ideal:'✓ Aceptable',                         drenaje:'Mod-rápido', retencion:'Media',    labranza:'Moderada',   fertilidad:'Media',     cultivos:['Tomate','Maíz','Soya','Pimiento'],                         adv:null,                                                          desc:'Características intermedias entre arena y arcilla.'},
+    'Franco Limoso':        {ideal:'✓ Bueno',                              drenaje:'Lento',      retencion:'Muy alta', labranza:'Moderada',   fertilidad:'Alta',      cultivos:['Trigo','Cebada','Hortalizas de hoja','Flores'],             adv:'Propenso a encharcamiento. Asegurar buen drenaje.',           desc:'Alta retención de agua y nutrientes. Puede formar costra.'},
+    'Franco Arcillo Limoso':{ideal:'⚠ Requiere manejo',                    drenaje:'Lento',      retencion:'Muy alta', labranza:'Difícil',    fertilidad:'Alta',      cultivos:['Arroz','Caña','Pastos con drenaje'],                       adv:'Alto riesgo de asfixia radicular. Instalar drenajes.',        desc:'Alta retención pero muy susceptible a compactación.'},
+    'Arcilloso':            {ideal:'⚠ Manejo especializado',               drenaje:'Muy lento',  retencion:'Muy alta', labranza:'Difícil',    fertilidad:'Alta',      cultivos:['Arroz inundado','Caña panelera','Pastos de corte'],         adv:'Riesgo severo de encharcamiento. Enmiendas necesarias.',      desc:'Muy cohesivo. Retiene agua pero puede asfixiar raíces.'},
+    'Arcillo Arenoso':      {ideal:'⚠ Requiere manejo',                    drenaje:'Lento',      retencion:'Alta',     labranza:'Difícil',    fertilidad:'Media-alta', cultivos:['Pastos','Caña'],                                          adv:'Evitar maquinaria pesada. Subsolado periódico.',              desc:'Pesado pero con algo de drenaje gracias a la arena.'},
+    'Arcillo Limoso':       {ideal:'⚠ Difícil manejo',                     drenaje:'Muy lento',  retencion:'Muy alta', labranza:'Muy difícil', fertilidad:'Alta',     cultivos:['Arroz','Pastos inundados'],                                adv:'Requiere mejoramiento estructural con arena y MO.',           desc:'Muy plástico y pegajoso. Difícil en cualquier humedad.'},
+    'Arenoso':              {ideal:'⚠ Baja fertilidad natural',            drenaje:'Muy rápido', retencion:'Muy baja', labranza:'Muy fácil',  fertilidad:'Muy baja',  cultivos:['Piña','Sandía','Espárrago','Cacahuete'],                   adv:'Muy baja retención. Usar fertirrigación y mulching.',         desc:'Drena muy rápido, pierde agua y nutrientes con facilidad.'},
+    'Arena Franca':         {ideal:'⚠ Baja retención',                     drenaje:'Rápido',     retencion:'Baja',     labranza:'Fácil',      fertilidad:'Baja',      cultivos:['Zanahoria','Rábano','Batata','Cultivos de raíz'],           adv:'Fertilizar en dosis pequeñas y frecuentes.',                  desc:'Similar al arenoso pero con algo más de cohesión.'},
+    'Limoso':               {ideal:'✓ Bueno con manejo',                   drenaje:'Lento',      retencion:'Alta',     labranza:'Moderada',   fertilidad:'Alta',      cultivos:['Trigo','Cebada','Flores de corte','Hortalizas'],           adv:'Propenso a costra superficial. Usar mulching.',               desc:'Textura fina y suave. Buena fertilidad natural.'},
+  };
+  return db[tipo]||{ideal:'—',drenaje:'—',retencion:'—',labranza:'—',fertilidad:'—',cultivos:[],adv:null,desc:'Tipo no identificado.'};
+}
+
+// Renderiza triángulo + panel de info
+function renderTextura(arena,limo,arcilla,svgId,infoId,labelId){
+  const svg=document.getElementById(svgId);
+  if(!svg) return;
+  buildTriangle(svg,arena,limo,arcilla);
+
+  const tipo=clasificarTextura(arena,limo,arcilla);
+  if(labelId) document.getElementById(labelId).textContent = tipo||'Ingresa arena, limo y arcilla';
+
+  const infoEl=document.getElementById(infoId);
+  if(!infoEl) return;
+
+  if(!tipo){
+    infoEl.innerHTML='<div style="font-size:11px;color:var(--text3);font-family:\'DM Mono\',monospace;line-height:1.8">Ingresa los porcentajes de<br>arena, limo y arcilla para<br>visualizar la textura.</div>';
+    return;
+  }
+
+  const info=getInfoTextura(tipo);
+  const tot=(arena||0)+(limo||0)+(arcilla||0);
+  const aN=tot>0?(arena/tot*100).toFixed(1):'—';
+  const lN=tot>0?(limo/tot*100).toFixed(1):'—';
+  const cN=tot>0?(arcilla/tot*100).toFixed(1):'—';
+
+  infoEl.innerHTML=`
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--text);margin-bottom:3px">${tipo}</div>
+    <div style="font-size:10px;color:var(--accent2);font-family:'DM Mono',monospace;margin-bottom:8px">${info.ideal}</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.6">${info.desc}</div>
+    <div class="tex-bar">
+      <div class="tex-seg" style="width:${aN}%;background:rgba(210,153,34,0.85)">${parseFloat(aN)>5?aN+'%':''}</div>
+      <div class="tex-seg" style="width:${lN}%;background:rgba(88,166,255,0.8)">${parseFloat(lN)>5?lN+'%':''}</div>
+      <div class="tex-seg" style="width:${cN}%;background:rgba(248,81,73,0.8)">${parseFloat(cN)>5?cN+'%':''}</div>
+    </div>
+    <div class="tex-legend" style="margin-bottom:10px">
+      <span><i class="dot" style="background:rgba(210,153,34,0.85)"></i>Arena ${aN}%</span>
+      <span><i class="dot" style="background:rgba(88,166,255,0.8)"></i>Limo ${lN}%</span>
+      <span><i class="dot" style="background:rgba(248,81,73,0.8)"></i>Arcilla ${cN}%</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+      ${[['Drenaje',info.drenaje],['Retención',info.retencion],['Labranza',info.labranza],['Fertilidad',info.fertilidad]].map(([k,v])=>
+        `<div class="prop-item"><div class="prop-key">${k}</div><div class="prop-val" style="font-size:11px">${v}</div></div>`).join('')}
+    </div>
+    <div class="prop-key" style="margin-bottom:5px">Cultivos recomendados</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:${info.adv?'8px':'0'}">
+      ${info.cultivos.map(c=>`<span class="tag" style="color:var(--accent);border-color:rgba(57,211,83,0.3)">${c}</span>`).join('')}
+    </div>
+    ${info.adv?`<div style="padding:8px 10px;background:rgba(248,81,73,0.07);border-left:2px solid var(--red);border-radius:5px;font-size:11px;color:var(--text2);line-height:1.5">⚠ ${info.adv}</div>`:''}
+  `;
+}
+
+function updatePredTriangle(){
+  const a=parseFloat(document.getElementById('p-arena').value)||null;
+  const l=parseFloat(document.getElementById('p-limo').value)||null;
+  const c=parseFloat(document.getElementById('p-arcilla').value)||null;
+  renderTextura(a,l,c,'pred-tri-svg','pred-tri-info','pred-soil-label');
+}
+
+// Dibujar triángulo vacío al cargar
+window.addEventListener('load', ()=>{ buildTriangle(document.getElementById('pred-tri-svg'),null,null,null); });
+
+// ═══════════════════════════════════════════════
+// NAVEGACIÓN
+// ═══════════════════════════════════════════════
+let currentView='dashboard', currentPage=1, totalPages=1, filterTimer=null;
+const charts={};
+
+function switchView(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.querySelector(`[data-view="${view}"]`).classList.add('active');
+  document.getElementById('topbar-title').textContent={dashboard:'Dashboard General',data:'Base de Datos',predictor:'Predictor IA'}[view];
+  currentView=view;
+  if(view==='data') loadData();
+}
+
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ═══════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════
+async function loadDashboard(){
+  const data=await fetch('/api/dashboard').then(r=>r.json());
+  const total=data.total_records;
+  document.getElementById('kpi-total').textContent=total.toLocaleString();
+  document.getElementById('sidebar-total').textContent=total.toLocaleString();
+  const acc=data.model_accuracy;
+  document.getElementById('sidebar-acc').textContent=acc?acc+'%':'N/D';
+  document.getElementById('model-info').textContent=acc?`Random Forest · Precisión: ${acc}%`:'Random Forest';
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'});
+  const op=data.estado_counts['Óptimo']||0, me=data.estado_counts['Medio']||0, cr=data.estado_counts['Crítico']||0;
+  document.getElementById('kpi-optimal').textContent=op.toLocaleString();
+  document.getElementById('kpi-medio').textContent=me.toLocaleString();
+  document.getElementById('kpi-critico').textContent=cr.toLocaleString();
+  document.getElementById('kpi-optimal-pct').textContent=((op/total)*100).toFixed(1)+'% del total';
+  document.getElementById('kpi-medio-pct').textContent=((me/total)*100).toFixed(1)+'% del total';
+  document.getElementById('kpi-critico-pct').textContent=((cr/total)*100).toFixed(1)+'% del total';
+  document.getElementById('kpi-ph').textContent=data.stats.pH?.mean?.toFixed(2)||'—';
+  document.getElementById('kpi-mo').textContent=(data.stats.MO_pct?.mean?.toFixed(1)||'—')+'%';
+  buildCharts(data); buildStatsTable(data.stats);
+}
+
+function destroyChart(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+function buildCharts(data){
+  Chart.defaults.color='#8b949e';
+  Chart.defaults.font.family="'DM Mono',monospace";
+  Chart.defaults.font.size=11;
+  const grid={color:'rgba(255,255,255,0.05)',drawBorder:false};
+  const tick={color:'#484f58',font:{family:"'DM Mono',monospace",size:10}};
+
+  destroyChart('ph');
+  charts['ph']=new Chart(document.getElementById('chart-ph'),{type:'bar',data:{labels:Object.keys(data.ph_dist),datasets:[{data:Object.values(data.ph_dist),backgroundColor:'rgba(88,166,255,0.7)',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid,ticks:tick},y:{grid,ticks:tick}}}});
+
+  destroyChart('estado');
+  charts['estado']=new Chart(document.getElementById('chart-estado'),{type:'doughnut',data:{labels:['Óptimo','Medio','Crítico','Sin Datos'],datasets:[{data:[data.estado_counts['Óptimo']||0,data.estado_counts['Medio']||0,data.estado_counts['Crítico']||0,data.estado_counts['Sin Datos']||0],backgroundColor:['#3fb950','#d29922','#f85149','#30363d'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{padding:12,boxWidth:10,font:{size:11}}}}}});
+
+  destroyChart('cultivos');
+  charts['cultivos']=new Chart(document.getElementById('chart-cultivos'),{type:'bar',data:{labels:Object.keys(data.cultivo_counts),datasets:[{data:Object.values(data.cultivo_counts),backgroundColor:'rgba(0,213,163,0.7)',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid,ticks:tick},y:{grid:{display:false},ticks:{...tick,font:{size:10}}}}}});
+
+  destroyChart('mo');
+  charts['mo']=new Chart(document.getElementById('chart-mo'),{type:'bar',data:{labels:Object.keys(data.mo_dist),datasets:[{data:Object.values(data.mo_dist),backgroundColor:'rgba(188,140,255,0.7)',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid,ticks:tick},y:{grid,ticks:tick}}}});
+
+  destroyChart('trend');
+  const tk=Object.keys(data.year_trend).sort();
+  charts['trend']=new Chart(document.getElementById('chart-trend'),{type:'line',data:{labels:tk,datasets:[{data:tk.map(k=>data.year_trend[k]),borderColor:'#3fb950',backgroundColor:'rgba(63,185,80,0.1)',tension:0.3,fill:true,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid,ticks:tick},y:{grid,ticks:tick}}}});
+
+  destroyChart('textura');
+  charts['textura']=new Chart(document.getElementById('chart-textura'),{type:'pie',data:{labels:Object.keys(data.textura),datasets:[{data:Object.values(data.textura),backgroundColor:['#58a6ff','#3fb950','#d29922','#f85149','#bc8cff','#39d353','#00d5a3','#ff7b54'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:8,boxWidth:10,font:{size:9}}}}}});
+
+  destroyChart('mun');
+  charts['mun']=new Chart(document.getElementById('chart-mun'),{type:'bar',data:{labels:Object.keys(data.municipio_counts),datasets:[{data:Object.values(data.municipio_counts),backgroundColor:'rgba(248,81,73,0.65)',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid,ticks:tick},y:{grid:{display:false},ticks:{...tick,font:{size:10}}}}}});
+}
+
+function buildStatsTable(stats){
+  const labels={pH:'pH',MO_pct:'Materia Orgánica (%)',P_disponible_ppm:'P Disponible (ppm)',Ca_meq_100g:'Ca meq/100g',Mg_meq_100g:'Mg meq/100g',K_meq_100g:'K meq/100g'};
+  document.getElementById('stats-body').innerHTML=Object.entries(stats).filter(([,s])=>s).map(([k,s])=>`<tr><td>${labels[k]||k}</td><td>${fmt(s.min)}</td><td>${fmt(s.q25)}</td><td>${fmt(s.median)}</td><td>${fmt(s.mean)}</td><td>${fmt(s.q75)}</td><td>${fmt(s.max)}</td><td>${fmt(s.std)}</td></tr>`).join('');
+}
+
+function fmt(v){ return v!=null?Number(v).toFixed(2):'—'; }
+
+// ═══════════════════════════════════════════════
+// FILTROS Y TABLA
+// ═══════════════════════════════════════════════
+async function loadFilters(){
+  const data=await fetch('/api/filters').then(r=>r.json());
+  const populate=(id,items)=>{
+    const sel=document.getElementById(id);
+    items.forEach(v=>{if(!v||v==='Nan')return;const o=document.createElement('option');o.value=o.textContent=v;sel.appendChild(o);});
+  };
+  populate('f-cultivo',data.cultivos);
+  populate('f-municipio',data.municipios);
+  populate('f-tipo-suelo',data.tipos_suelo);
+}
+
+function getFilterParams(){
+  return new URLSearchParams({
+    cultivo:document.getElementById('f-cultivo')?.value||'all',
+    municipio:document.getElementById('f-municipio')?.value||'all',
+    tipo_suelo:document.getElementById('f-tipo-suelo')?.value||'all',
+    estado:document.getElementById('f-estado')?.value||'all',
+    ph_min:document.getElementById('f-ph-min')?.value||'',
+    ph_max:document.getElementById('f-ph-max')?.value||'',
+    mo_min:document.getElementById('f-mo-min')?.value||'',
+    mo_max:document.getElementById('f-mo-max')?.value||'',
+    search:document.getElementById('f-search')?.value||'',
+    page:currentPage,per_page:25
+  });
+}
+
+async function loadData(){
+  const tbody=document.getElementById('data-tbody');
+  tbody.innerHTML='<tr><td colspan="12"><div class="loading-state"><div class="spinner"></div> Cargando...</div></td></tr>';
+  const data=await fetch('/api/data?'+getFilterParams()).then(r=>r.json());
+  totalPages=data.pages;
+  document.getElementById('data-count').textContent=`${data.total.toLocaleString()} registros`;
+  if(data.records.length===0){tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><div class="emoji">🔍</div><p>No se encontraron registros.</p></div></td></tr>';document.getElementById('pagination').innerHTML='';return;}
+  tbody.innerHTML=data.records.map(r=>`<tr><td>${r.cod_muestra||'—'}</td><td>${r.cultivo||'—'}</td><td>${r.municipio||'—'}</td><td class="text-mono">${fmtVal(r.pH)}</td><td class="text-mono">${fmtVal(r.MO_pct)}</td><td class="text-mono">${fmtVal(r.P_disponible_ppm)}</td><td class="text-mono">${fmtVal(r.Al_meq_100g)}</td><td class="text-mono">${fmtVal(r.CE_dS_m)}</td><td>${r.tipo_suelo||'—'}</td><td>${estadoBadge(r.estado)}</td><td class="text-mono" style="color:var(--text3);font-size:11px">${r.fecha_muestra?r.fecha_muestra.split(' ')[0]:'—'}</td><td><button class="btn btn-ghost btn-sm" onclick="openRecord('${r.cod_muestra}')">Ver</button></td></tr>`).join('');
+  buildPagination(data.page,data.pages,data.total);
+}
+
+function fmtVal(v){ return v!=null?Number(v).toFixed(2):'<span style="color:var(--text3)">—</span>'; }
+function estadoBadge(e){ const m={'Óptimo':'optimal','Medio':'medio','Crítico':'critico'}; return `<span class="badge badge-${m[e]||'nodata'}">${e||'Sin datos'}</span>`; }
+
+function buildPagination(page,pages,total){
+  const pg=document.getElementById('pagination');
+  let h=`<button class="pg-btn" onclick="goPage(${page-1})" ${page<=1?'disabled':''}>←</button>`;
+  const s=Math.max(1,page-2),e=Math.min(pages,page+2);
+  if(s>1) h+=`<button class="pg-btn" onclick="goPage(1)">1</button>${s>2?'<span class="pg-info">…</span>':''}`;
+  for(let i=s;i<=e;i++) h+=`<button class="pg-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  if(e<pages) h+=`${e<pages-1?'<span class="pg-info">…</span>':''}<button class="pg-btn" onclick="goPage(${pages})">${pages}</button>`;
+  h+=`<button class="pg-btn" onclick="goPage(${page+1})" ${page>=pages?'disabled':''}>→</button><span class="pg-info">${total.toLocaleString()} total</span>`;
+  pg.innerHTML=h;
+}
+
+function goPage(p){currentPage=p;loadData();window.scrollTo(0,0);}
+function applyFilters(){currentPage=1;loadData();}
+function debounceFilter(){clearTimeout(filterTimer);filterTimer=setTimeout(applyFilters,400);}
+function clearFilters(){
+  ['f-search','f-ph-min','f-ph-max','f-mo-min','f-mo-max'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['f-cultivo','f-municipio','f-tipo-suelo','f-estado'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='all';});
+  applyFilters();
+}
+
+// ═══════════════════════════════════════════════
+// MODAL CON TRIÁNGULO
+// ═══════════════════════════════════════════════
+async function openRecord(cod){
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('modal-body').innerHTML='<div class="loading-state"><div class="spinner"></div> Cargando...</div>';
+  document.getElementById('modal-cod').textContent=cod;
+  document.getElementById('modal-title').textContent='Detalle de Muestra';
+
+  const r=await fetch(`/api/record/${encodeURIComponent(cod)}`).then(res=>res.json());
+  if(r.error){document.getElementById('modal-body').innerHTML=`<p style="color:var(--red)">${r.error}</p>`;return;}
+  document.getElementById('modal-title').textContent=r.cultivo||'Muestra';
+
+  const numFields=[
+    ['pH','pH'],['MO_pct','MO (%)'],['C_organico_pct','C Orgánico (%)'],['N_total_pct','N Total (%)'],
+    ['P_disponible_ppm','P Disponible (ppm)'],['Ca_meq_100g','Ca (meq/100g)'],['Mg_meq_100g','Mg (meq/100g)'],
+    ['K_meq_100g','K (meq/100g)'],['Na_meq_100g','Na (meq/100g)'],['Al_meq_100g','Al (meq/100g)'],
+    ['CE_dS_m','CE (dS/m)'],['Fe_ppm','Fe (ppm)'],['Mn_ppm','Mn (ppm)'],['Zn_ppm','Zn (ppm)'],
+    ['Cu_ppm','Cu (ppm)'],['B_ppm','B (ppm)'],['S_ppm','S (ppm)'],['densidad_aparente','D. Aparente'],
+  ];
+  const propsHtml=numFields.map(([k,l])=>r[k]!=null?`<div class="prop-item"><div class="prop-key">${l}</div><div class="prop-val">${Number(r[k]).toFixed(3)}</div></div>`:'').join('');
+
+  const arena  =r.arena_pct  !=null?Number(r.arena_pct)  :null;
+  const limo   =r.limo_pct   !=null?Number(r.limo_pct)   :null;
+  const arcilla=r.arcilla_pct!=null?Number(r.arcilla_pct):null;
+  const tipo   =r.tipo_suelo||clasificarTextura(arena,limo,arcilla)||'—';
+
+  const recs=r.ai_recommendations||{};
+  const alertsHtml=(recs.alertas||[]).map(a=>`<li class="alert"><span class="ri">⚠</span>${a}</li>`).join('');
+  const recsHtml  =(recs.recomendaciones||[]).map(a=>`<li class="rec"><span class="ri">✓</span>${a}</li>`).join('');
+
+  document.getElementById('modal-body').innerHTML=`
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+      ${estadoBadge(r.estado)}
+      ${r.municipio?`<span class="tag">📍 ${r.municipio}</span>`:''}
+      ${tipo!=='—'?`<span class="tag">🪨 ${tipo}</span>`:''}
+      ${r.fecha_muestra?`<span class="tag">📅 ${r.fecha_muestra.split(' ')[0]}</span>`:''}
+      ${r.departamento?`<span class="tag">${r.departamento}</span>`:''}
+    </div>
+
+    <div class="modal-section-title">Parámetros Fisicoquímicos</div>
+    <div class="props-grid">${propsHtml}</div>
+
+    <hr class="divider">
+    <div class="modal-section-title">🪨 Textura del Suelo — Triángulo USDA</div>
+    <div class="triangle-wrap">
+      <div class="triangle-svg-box"><svg id="modal-tri-svg" width="270" height="248"></svg></div>
+      <div class="triangle-info" id="modal-tri-info"><div class="loading-state" style="padding:16px"><div class="spinner"></div></div></div>
+    </div>
+
+    <hr class="divider">
+    <div class="modal-section-title">✦ Recomendaciones Agroecológicas</div>
+    ${alertsHtml||recsHtml?`<ul class="rec-list">${alertsHtml}${recsHtml}</ul>`:'<p style="color:var(--text3);font-size:12px">Sin recomendaciones disponibles.</p>'}
+
+    ${r.OBSERVACIONES&&r.OBSERVACIONES.length>10?`
+      <hr class="divider">
+      <div class="modal-section-title">Observaciones de Laboratorio</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6;max-height:120px;overflow-y:auto;padding-right:4px">${r.OBSERVACIONES.substring(0,600)}${r.OBSERVACIONES.length>600?'…':''}</div>`:''}
+  `;
+
+  // Renderizar triángulo después de que el DOM esté listo
+  setTimeout(()=>renderTextura(arena,limo,arcilla,'modal-tri-svg','modal-tri-info',null),60);
+}
+
+function closeModal(e){if(e.target.id==='modal-overlay')closeModalBtn();}
+function closeModalBtn(){document.getElementById('modal-overlay').classList.remove('open');}
+
+// ═══════════════════════════════════════════════
+// PREDICTOR
+// ═══════════════════════════════════════════════
+async function runPrediction(){
+  const arena  =parseFloat(document.getElementById('p-arena').value)  ||null;
+  const limo   =parseFloat(document.getElementById('p-limo').value)   ||null;
+  const arcilla=parseFloat(document.getElementById('p-arcilla').value)||null;
+  const tipoSuelo=clasificarTextura(arena,limo,arcilla);
+
+  const data={
+    pH:parseFloat(document.getElementById('p-ph').value)||null,
+    MO_pct:parseFloat(document.getElementById('p-mo').value)||null,
+    P_disponible_ppm:parseFloat(document.getElementById('p-p').value)||null,
+    Ca_meq_100g:parseFloat(document.getElementById('p-ca').value)||null,
+    Mg_meq_100g:parseFloat(document.getElementById('p-mg').value)||null,
+    K_meq_100g:parseFloat(document.getElementById('p-k').value)||null,
+    Al_meq_100g:parseFloat(document.getElementById('p-al').value)||null,
+    CE_dS_m:parseFloat(document.getElementById('p-ce').value)||null,
+    N_total_pct:parseFloat(document.getElementById('p-n').value)||null,
+    C_organico_pct:parseFloat(document.getElementById('p-c').value)||null,
+  };
+
+  const resultEl=document.getElementById('pred-result');
+  resultEl.innerHTML='<div class="spinner"></div>';
+  const res=await fetch('/api/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(r=>r.json());
+
+  if(res.error){resultEl.innerHTML=`<div style="color:var(--red);font-size:13px">⚠ ${res.error}</div>`;return;}
+
+  const cls={'Óptimo':'optimal','Medio':'medio','Crítico':'critico'};
+  const info=tipoSuelo?getInfoTextura(tipoSuelo):null;
+  const probBars=Object.entries(res.probabilities).map(([k,v])=>`
+    <div class="prob-bar-row">
+      <span class="prob-bar-label">${k}</span>
+      <div class="prob-bar-track"><div class="prob-bar-fill" style="width:${v}%;background:${k==='Óptimo'?'var(--green)':k==='Medio'?'var(--yellow)':'var(--red)'}"></div></div>
+      <span class="prob-bar-pct">${v}%</span>
+    </div>`).join('');
+
+  resultEl.innerHTML=`
+    <div class="pred-result-label">Estado Predicho</div>
+    <div class="pred-result-val ${cls[res.prediction]||''}">${res.prediction}</div>
+    ${tipoSuelo?`
+      <div class="pred-soil-type">🪨 ${tipoSuelo}</div>
+      <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:6px">${info.ideal}</div>`
+    :'<div style="height:6px"></div>'}
+    <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:10px">Precisión del modelo: ${res.model_accuracy}%</div>
+    <div class="prob-bars">${probBars}</div>
+  `;
+}
+
+async function getLocalRecs(){
+  const data={
+    pH:parseFloat(document.getElementById('p-ph').value)||null,
+    MO_pct:parseFloat(document.getElementById('p-mo').value)||null,
+    P_disponible_ppm:parseFloat(document.getElementById('p-p').value)||null,
+    Ca_meq_100g:parseFloat(document.getElementById('p-ca').value)||null,
+    Mg_meq_100g:parseFloat(document.getElementById('p-mg').value)||null,
+    K_meq_100g:parseFloat(document.getElementById('p-k').value)||null,
+    Al_meq_100g:parseFloat(document.getElementById('p-al').value)||null,
+    CE_dS_m:parseFloat(document.getElementById('p-ce').value)||null,
+    N_total_pct:parseFloat(document.getElementById('p-n').value)||null,
+    C_organico_pct:parseFloat(document.getElementById('p-c').value)||null,
+    Fe_ppm:parseFloat(document.getElementById('p-fe').value)||null,
+    Zn_ppm:parseFloat(document.getElementById('p-zn').value)||null,
+    Mn_ppm:parseFloat(document.getElementById('p-mn').value)||null,
+    B_ppm:parseFloat(document.getElementById('p-b').value)||null,
+    Na_meq_100g:parseFloat(document.getElementById('p-na').value)||null,
+    densidad_aparente:parseFloat(document.getElementById('p-da').value)||null,
+    arena_pct:parseFloat(document.getElementById('p-arena').value)||null,
+    arcilla_pct:parseFloat(document.getElementById('p-arcilla').value)||null,
+    cultivo:document.getElementById('p-cultivo').value||'general',
+  };
+  const res=await fetch('/api/recommend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(r=>r.json());
+  const card=document.getElementById('pred-recs-card');
+  const list=document.getElementById('pred-rec-list');
+  const alerts=(res.alertas||[]).map(a=>`<li class="alert"><span class="ri">⚠</span>${a}</li>`).join('');
+  const recs=(res.recomendaciones||[]).map(r=>`<li class="rec"><span class="ri">✓</span>${r}</li>`).join('');
+  list.innerHTML=alerts+recs||'<li class="rec"><span class="ri">✓</span>Ingresa datos para obtener recomendaciones.</li>';
+  card.style.display='block';
+}
+
+function exportData(){
+  const params=new URLSearchParams({cultivo:document.getElementById('f-cultivo')?.value||'all',municipio:document.getElementById('f-municipio')?.value||'all',estado:document.getElementById('f-estado')?.value||'all'});
+  window.location.href='/api/export?'+params;
+  showToast('Exportando CSV...','success');
+}
+
+(async function init(){
+  await Promise.all([loadDashboard(),loadFilters()]);
+})();
+</script>
+</body>
+</html>
