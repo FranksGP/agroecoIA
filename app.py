@@ -414,7 +414,47 @@ def get_ai_recommendations(row_dict, use_api=False):
         return json.loads(text[start:end])
     except Exception:
         return local
+    
+# ── ML: Predicción por Cultivo + Municipio ──────────────────────────────────
+CULTIVO_MUN_FEATURES = ['pH', 'MO_pct', 'P_disponible_ppm', 'Ca_meq_100g',
+                         'Mg_meq_100g', 'K_meq_100g', 'Al_meq_100g', 'CE_dS_m']
 
+le_cultivo   = LabelEncoder()
+le_municipio = LabelEncoder()
+clf_cm       = None
+cm_acc       = 0.0
+
+def train_cultivo_municipio_model(df):
+    dft = df[['cultivo','municipio','estado'] + CULTIVO_MUN_FEATURES].dropna()
+    dft = dft[dft['estado'].isin(['Óptimo','Medio','Crítico'])]
+    dft = dft[dft['cultivo'].notna() & dft['municipio'].notna()]
+    if len(dft) < 50:
+        return None, None, None, 0.0
+
+    le_c = LabelEncoder()
+    le_m = LabelEncoder()
+    dft = dft.copy()
+    dft['cultivo_enc']   = le_c.fit_transform(dft['cultivo'])
+    dft['municipio_enc'] = le_m.fit_transform(dft['municipio'])
+
+    features = ['cultivo_enc','municipio_enc'] + CULTIVO_MUN_FEATURES
+    X = dft[features]
+    le_y = LabelEncoder()
+    y = le_y.fit_transform(dft['estado'])
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    clf = RandomForestClassifier(n_estimators=150, random_state=42)
+    clf.fit(X_train, y_train)
+    acc = accuracy_score(y_test, clf.predict(X_test))
+    return clf, le_c, le_m, le_y, acc
+
+try:
+    result_cm = train_cultivo_municipio_model(df_global)
+    if result_cm and len(result_cm) == 5:
+        clf_cm, le_cultivo, le_municipio, le_estado_cm, cm_acc = result_cm
+except Exception as e:
+    print(f"Modelo cultivo-municipio omitido: {e}")
+    le_estado_cm = None
 # ── Helpers ─────────────────────────────────────────────────────────────────
 def safe_float(v):
     try:
@@ -585,6 +625,8 @@ def predict():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+
 @app.route('/api/export')
 def export():
     import io
@@ -599,6 +641,99 @@ def export():
     from flask import Response
     return Response(output.getvalue(), mimetype='text/csv',
                     headers={'Content-Disposition': 'attachment; filename=agroeco_export.csv'})
+@app.route('/api/filter-recommendation')
+def filter_recommendation():
+    """
+    Calcula promedios, clasificación dominante, tipo de suelo y genera
+    recomendaciones agronómicas para el subconjunto filtrado de muestras.
+    Incluye textura promedio para el triángulo USDA del frontend.
+    """
+    dff = df_global.copy()
+
+    # Aplicar los mismos filtros que /api/data
+    cultivo    = request.args.get('cultivo')
+    municipio  = request.args.get('municipio')
+    tipo_suelo = request.args.get('tipo_suelo')
+    estado     = request.args.get('estado')
+    ph_min     = request.args.get('ph_min', type=float)
+    ph_max     = request.args.get('ph_max', type=float)
+    mo_min     = request.args.get('mo_min', type=float)
+    mo_max     = request.args.get('mo_max', type=float)
+
+    if cultivo    and cultivo    != 'all': dff = dff[dff['cultivo']    == cultivo]
+    if municipio  and municipio  != 'all': dff = dff[dff['municipio']  == municipio]
+    if tipo_suelo and tipo_suelo != 'all': dff = dff[dff['tipo_suelo'] == tipo_suelo]
+    if estado     and estado     != 'all': dff = dff[dff['estado']     == estado]
+    if ph_min is not None: dff = dff[dff['pH'] >= ph_min]
+    if ph_max is not None: dff = dff[dff['pH'] <= ph_max]
+    if mo_min is not None: dff = dff[dff['MO_pct'] >= mo_min]
+    if mo_max is not None: dff = dff[dff['MO_pct'] <= mo_max]
+
+    if dff.empty:
+        return jsonify({'error': 'No hay muestras con esos filtros.'}), 400
+
+    # Columnas para promediar
+    num_cols = [
+        'pH', 'MO_pct', 'P_disponible_ppm', 'Ca_meq_100g', 'Mg_meq_100g',
+        'K_meq_100g', 'Al_meq_100g', 'CE_dS_m', 'N_total_pct', 'C_organico_pct',
+        'Fe_ppm', 'Zn_ppm', 'Mn_ppm', 'B_ppm', 'Na_meq_100g', 'densidad_aparente',
+        'arena_pct', 'limo_pct', 'arcilla_pct', 'acidez_interc_meq',
+        'CICE_meq_100g', 'S_ppm', 'Cu_ppm',
+    ]
+    promedios = {}
+    for c in num_cols:
+        if c in dff.columns:
+            v = dff[c].dropna().mean()
+            promedios[c] = safe_float(v)
+
+    # Tipo de suelo predominante (moda) — prioriza tipo_suelo existente,
+    # si no lo hay calcula desde textura promedio
+    tipo_suelo_pred = None
+    if 'tipo_suelo' in dff.columns:
+        moda_ts = dff['tipo_suelo'].dropna().mode()
+        if len(moda_ts) > 0:
+            tipo_suelo_pred = moda_ts[0]
+    if tipo_suelo_pred is None:
+        tipo_suelo_pred = clasificar_textura(
+            promedios.get('arena_pct'),
+            promedios.get('limo_pct'),
+            promedios.get('arcilla_pct')
+        )
+
+    # Cultivo más frecuente en la selección
+    cultivo_moda = None
+    if 'cultivo' in dff.columns:
+        moda_c = dff['cultivo'].dropna().mode()
+        cultivo_moda = moda_c[0] if len(moda_c) > 0 else None
+    # Si el usuario filtró por cultivo, ese tiene precedencia
+    cultivo_para_recs = (cultivo if cultivo and cultivo != 'all' else cultivo_moda) or ''
+
+    # Construir fila promedio para recomendaciones
+    avg_row = dict(promedios)
+    avg_row['cultivo'] = cultivo_para_recs
+
+    # Estado dominante
+    estado_counts = dff['estado'].value_counts().to_dict()
+
+    # Generar recomendaciones basadas en el promedio de la selección
+    recs = generate_local_recommendations(avg_row)
+
+    return jsonify({
+        'total':                   len(dff),
+        'estado_counts':           estado_counts,
+        'promedios':               promedios,
+        'tipo_suelo_predominante': tipo_suelo_pred,
+        'cultivo_moda':            cultivo_moda,
+        'recomendaciones':         recs['recomendaciones'],
+        'alertas':                 recs['alertas'],
+        'filtros_activos': {
+            'cultivo':    cultivo    if cultivo    and cultivo    != 'all' else None,
+            'municipio':  municipio  if municipio  and municipio  != 'all' else None,
+            'tipo_suelo': tipo_suelo if tipo_suelo and tipo_suelo != 'all' else None,
+            'estado':     estado     if estado     and estado     != 'all' else None,
+        }
+    })
+
 
 if __name__ == '__main__':
     print("🌱 AgroEco Lab iniciando en http://localhost:5000")

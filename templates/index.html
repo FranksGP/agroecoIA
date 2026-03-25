@@ -157,13 +157,69 @@ table.data-table tr:last-child td{border-bottom:none}
 .text-mono{font-family:'DM Mono',monospace}
 .tag{display:inline-block;padding:1px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 @media(max-width:900px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.chart-grid{grid-template-columns:1fr}.predictor-grid{grid-template-columns:1fr}}
+
+/* ══════════════════════════════════════════════════
+   PANEL DE RECOMENDACIÓN CONTEXTUAL — VISTA DATOS
+   ══════════════════════════════════════════════════ */
+#filter-rec-panel{display:none;margin-bottom:18px;border-radius:10px;overflow:hidden;border:1px solid var(--border2);animation:slideUp .25s ease}
+.frp-header{background:linear-gradient(90deg,rgba(57,211,83,.13),rgba(0,213,163,.06));padding:13px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border2);gap:12px;flex-wrap:wrap}
+.frp-header-left{display:flex;align-items:center;gap:10px}
+.frp-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text)}
+.frp-context{display:flex;gap:6px;flex-wrap:wrap}
+.frp-tag{font-size:10px;font-family:'DM Mono',monospace;padding:2px 9px;border-radius:20px;border:1px solid}
+.frp-tag.cultivo{background:rgba(0,213,163,.1);border-color:rgba(0,213,163,.3);color:var(--accent2)}
+.frp-tag.municipio{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:var(--blue)}
+.frp-tag.count{background:rgba(57,211,83,.1);border-color:rgba(57,211,83,.3);color:var(--accent)}
+.frp-badge-estado{font-size:10px;font-family:'DM Mono',monospace;padding:3px 10px;border-radius:20px;font-weight:700}
+.frp-body{background:var(--bg2);display:grid;grid-template-columns:1fr 1fr;gap:0}
+.frp-col{padding:18px}
+.frp-col:first-child{border-right:1px solid var(--border2)}
+.frp-section-title{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border2)}
+/* Métricas promedio */
+.frp-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.frp-metric{background:var(--bg3);border-radius:6px;padding:8px 10px;text-align:center}
+.frp-metric-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;line-height:1}
+.frp-metric-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:3px;text-transform:uppercase}
+.frp-metric.ph .frp-metric-val{color:var(--blue)}
+.frp-metric.mo .frp-metric-val{color:var(--green)}
+.frp-metric.p  .frp-metric-val{color:var(--yellow)}
+.frp-metric.al .frp-metric-val{color:var(--red)}
+.frp-metric.k  .frp-metric-val{color:var(--purple)}
+.frp-metric.ce .frp-metric-val{color:var(--accent2)}
+/* Triángulo textural embebido */
+.frp-triangle-wrap{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+.frp-tri-info{flex:1;min-width:0}
+.frp-tri-type{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--text);margin-bottom:2px}
+.frp-tri-ideal{font-size:10px;color:var(--accent2);font-family:'DM Mono',monospace;margin-bottom:6px}
+.frp-tri-desc{font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:8px}
+.frp-tri-props{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+.frp-tri-prop{background:var(--bg3);border-radius:5px;padding:5px 8px}
+.frp-tri-prop-k{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace}
+.frp-tri-prop-v{font-size:11px;color:var(--text);margin-top:1px}
+.frp-tri-adv{padding:7px 10px;background:rgba(248,81,73,.07);border-left:2px solid var(--red);border-radius:4px;font-size:10px;color:var(--text2);line-height:1.5}
+.frp-tex-bar{display:flex;height:18px;border-radius:4px;overflow:hidden;gap:1px;margin-bottom:5px}
+.frp-tex-seg{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'DM Mono',monospace;color:#000;min-width:0}
+.frp-tex-legend{display:flex;gap:10px;flex-wrap:wrap}
+.frp-tex-legend span{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:3px}
+.frp-dot{width:7px;height:7px;border-radius:2px;display:inline-block;flex-shrink:0}
+/* Recomendaciones dentro del panel */
+.frp-recs-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.frp-recs-list li{padding:8px 11px;border-radius:6px;font-size:11px;line-height:1.55;display:flex;align-items:flex-start;gap:7px}
+.frp-recs-list li.alert{background:rgba(248,81,73,.07);border-left:2px solid var(--red);color:var(--text)}
+.frp-recs-list li.rec  {background:rgba(57,211,83,.06);border-left:2px solid var(--green);color:var(--text)}
+.frp-recs-list li .ri{font-size:12px;flex-shrink:0;margin-top:1px}
+.frp-recs-list li.alert .ri{color:var(--red)}.frp-recs-list li.rec .ri{color:var(--green)}
+.frp-cultivos-recomendados{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.frp-loading{padding:28px;text-align:center;color:var(--text3);font-family:'DM Mono',monospace;font-size:11px;display:flex;align-items:center;justify-content:center;gap:10px}
+@media(max-width:860px){.frp-body{grid-template-columns:1fr}.frp-col:first-child{border-right:none;border-bottom:1px solid var(--border2)}.frp-metrics{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
 
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <h1>🌱 AgrocologIA</h1>
+
+    <h1>🌱 AgroecologIA</h1>
     <h5>   Orientaciones presuntivas en cultivos agroecológicos</h5>
     <span>v2.0 · Sistema de Análisis</span>
   </div>
@@ -225,6 +281,27 @@ table.data-table tr:last-child td{border-bottom:none}
         <div class="filter-group"><label class="filter-label">MO % (rango)</label><div class="range-inputs"><input type="number" class="filter-input" id="f-mo-min" placeholder="Min" step="0.1" style="width:70px" oninput="debounceFilter()"><span>—</span><input type="number" class="filter-input" id="f-mo-max" placeholder="Max" step="0.1" style="width:70px" oninput="debounceFilter()"></div></div>
         <div class="filter-group" style="justify-content:flex-end"><button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕ Limpiar</button></div>
       </div>
+
+      <!-- ── Panel de Recomendación Contextual ── -->
+      <div id="filter-rec-panel">
+        <div class="frp-header">
+          <div class="frp-header-left">
+            <span style="font-size:16px">🌱</span>
+            <div>
+              <div class="frp-title">Recomendación Agronómica para la Selección Filtrada</div>
+              <div class="frp-context" id="frp-context-tags" style="margin-top:4px"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <span id="frp-estado-badge" class="frp-badge-estado"></span>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('filter-rec-panel').style.display='none'" style="font-size:11px">✕</button>
+          </div>
+        </div>
+        <div class="frp-body" id="frp-body">
+          <div class="frp-loading"><div class="spinner"></div> Calculando recomendaciones…</div>
+        </div>
+      </div>
+
       <div class="table-wrap">
         <table class="data-table">
           <thead><tr><th>Código</th><th>Cultivo</th><th>Municipio</th><th>pH</th><th>MO%</th><th>P disp.</th><th>Al meq</th><th>CE dS/m</th><th>Tipo Suelo</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
@@ -658,6 +735,176 @@ async function loadData(){
   if(data.records.length===0){tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><div class="emoji">🔍</div><p>No se encontraron registros.</p></div></td></tr>';document.getElementById('pagination').innerHTML='';return;}
   tbody.innerHTML=data.records.map(r=>`<tr><td>${r.cod_muestra||'—'}</td><td>${r.cultivo||'—'}</td><td>${r.municipio||'—'}</td><td class="text-mono">${fmtVal(r.pH)}</td><td class="text-mono">${fmtVal(r.MO_pct)}</td><td class="text-mono">${fmtVal(r.P_disponible_ppm)}</td><td class="text-mono">${fmtVal(r.Al_meq_100g)}</td><td class="text-mono">${fmtVal(r.CE_dS_m)}</td><td>${r.tipo_suelo||'—'}</td><td>${estadoBadge(r.estado)}</td><td class="text-mono" style="color:var(--text3);font-size:11px">${r.fecha_muestra?r.fecha_muestra.split(' ')[0]:'—'}</td><td><button class="btn btn-ghost btn-sm" onclick="openRecord('${r.cod_muestra}')">Ver</button></td></tr>`).join('');
   buildPagination(data.page,data.pages,data.total);
+
+  // ── Disparar recomendación contextual si hay filtro activo ──
+  const cultivo  = document.getElementById('f-cultivo')?.value||'all';
+  const municipio= document.getElementById('f-municipio')?.value||'all';
+  const tipoSuelo= document.getElementById('f-tipo-suelo')?.value||'all';
+  const estado   = document.getElementById('f-estado')?.value||'all';
+  const hayFiltro= cultivo!=='all'||municipio!=='all'||tipoSuelo!=='all'||estado!=='all';
+
+  if(hayFiltro && data.total > 0){
+    loadFilterRecommendation(data.total);
+  } else {
+    document.getElementById('filter-rec-panel').style.display='none';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// PANEL DE RECOMENDACIÓN CONTEXTUAL PARA FILTROS
+// Llama a /api/filter-recommendation con los filtros activos
+// y renderiza diagnóstico + triángulo USDA + recomendaciones
+// ─────────────────────────────────────────────────────────────
+let frpTimer = null;
+
+function loadFilterRecommendation(total){
+  const panel = document.getElementById('filter-rec-panel');
+  panel.style.display = 'block';
+
+  // Contexto visible en el header
+  const cultivo  = document.getElementById('f-cultivo')?.value||'all';
+  const municipio= document.getElementById('f-municipio')?.value||'all';
+  const tipoSuelo= document.getElementById('f-tipo-suelo')?.value||'all';
+  const estado   = document.getElementById('f-estado')?.value||'all';
+
+  const tags = document.getElementById('frp-context-tags');
+  tags.innerHTML = '';
+  if(cultivo!=='all')   tags.innerHTML+=`<span class="frp-tag cultivo">🌾 ${cultivo}</span>`;
+  if(municipio!=='all') tags.innerHTML+=`<span class="frp-tag municipio">📍 ${municipio}</span>`;
+  if(tipoSuelo!=='all') tags.innerHTML+=`<span class="frp-tag cultivo">🪨 ${tipoSuelo}</span>`;
+  tags.innerHTML+=`<span class="frp-tag count">${total.toLocaleString()} muestras</span>`;
+
+  document.getElementById('frp-body').innerHTML=
+    `<div class="frp-loading"><div class="spinner"></div> Calculando recomendaciones para la selección…</div>`;
+
+  clearTimeout(frpTimer);
+  frpTimer = setTimeout(async ()=>{
+    try{
+      const params = new URLSearchParams({
+        cultivo, municipio, tipo_suelo: tipoSuelo, estado,
+        ph_min: document.getElementById('f-ph-min')?.value||'',
+        ph_max: document.getElementById('f-ph-max')?.value||'',
+        mo_min: document.getElementById('f-mo-min')?.value||'',
+        mo_max: document.getElementById('f-mo-max')?.value||'',
+      });
+      const data = await fetch('/api/filter-recommendation?'+params).then(r=>r.json());
+      if(data.error){ document.getElementById('frp-body').innerHTML=`<div class="frp-loading" style="color:var(--red)">⚠ ${data.error}</div>`; return; }
+      renderFilterRecommendation(data);
+    } catch(e){
+      document.getElementById('frp-body').innerHTML=`<div class="frp-loading" style="color:var(--red)">⚠ Error de conexión</div>`;
+    }
+  }, 350);
+}
+
+function renderFilterRecommendation(d){
+  // Badge de estado predominante
+  const ec = d.estado_counts||{};
+  const estados = [['Óptimo',ec['Óptimo']||0],['Medio',ec['Medio']||0],['Crítico',ec['Crítico']||0]];
+  const dominante = estados.sort((a,b)=>b[1]-a[1])[0][0];
+  const badgeEl = document.getElementById('frp-estado-badge');
+  const badgeMap = {Óptimo:{cls:'badge-optimal',txt:'✅ Predominantemente Óptimo'},Medio:{cls:'badge-medio',txt:'⚠ Predominantemente Medio'},Crítico:{cls:'badge-critico',txt:'❌ Predominantemente Crítico'}};
+  const bm = badgeMap[dominante]||{cls:'badge-nodata',txt:'Estado variado'};
+  badgeEl.className='frp-badge-estado badge '+bm.cls;
+  badgeEl.textContent=bm.txt;
+
+  const avg = d.promedios||{};
+  const arena   = avg.arena_pct   !=null ? Number(avg.arena_pct)   : null;
+  const limo    = avg.limo_pct    !=null ? Number(avg.limo_pct)    : null;
+  const arcilla = avg.arcilla_pct !=null ? Number(avg.arcilla_pct) : null;
+  const tipoTextura = d.tipo_suelo_predominante || clasificarTextura(arena, limo, arcilla);
+
+  // Helpers de semáforo de color para valores
+  const colorPH = (v)=> v==null?'var(--text3)': v>=5.5&&v<=7.0?'var(--green)': v>=5.0&&v<=7.5?'var(--yellow)':'var(--red)';
+  const colorMO = (v)=> v==null?'var(--text3)': v>=5?'var(--green)': v>=3?'var(--yellow)':'var(--red)';
+  const colorP  = (v)=> v==null?'var(--text3)': v>=20&&v<=60?'var(--green)': v>=10?'var(--yellow)':'var(--red)';
+  const colorAl = (v)=> v==null?'var(--text3)': v<0.5?'var(--green)': v<1.5?'var(--yellow)':'var(--red)';
+  const colorK  = (v)=> v==null?'var(--text3)': v>=0.4?'var(--green)': v>=0.2?'var(--yellow)':'var(--red)';
+  const colorCE = (v)=> v==null?'var(--text3)': v<=2?'var(--green)': v<=4?'var(--yellow)':'var(--red)';
+
+  const fv = (v,dec=2)=> v!=null?Number(v).toFixed(dec):'—';
+
+  // ── COLUMNA IZQUIERDA: métricas + triángulo ──
+  const metricsHtml = `
+    <div class="frp-section-title">Promedios de la Selección</div>
+    <div class="frp-metrics">
+      <div class="frp-metric ph"><div class="frp-metric-val" style="color:${colorPH(avg.pH)}">${fv(avg.pH,1)}</div><div class="frp-metric-lbl">pH</div></div>
+      <div class="frp-metric mo"><div class="frp-metric-val" style="color:${colorMO(avg.MO_pct)}">${fv(avg.MO_pct,1)}%</div><div class="frp-metric-lbl">M.O.</div></div>
+      <div class="frp-metric p"><div class="frp-metric-val" style="color:${colorP(avg.P_disponible_ppm)}">${fv(avg.P_disponible_ppm,0)}</div><div class="frp-metric-lbl">P ppm</div></div>
+      <div class="frp-metric al"><div class="frp-metric-val" style="color:${colorAl(avg.Al_meq_100g)}">${fv(avg.Al_meq_100g,2)}</div><div class="frp-metric-lbl">Al meq</div></div>
+      <div class="frp-metric k"><div class="frp-metric-val" style="color:${colorK(avg.K_meq_100g)}">${fv(avg.K_meq_100g,2)}</div><div class="frp-metric-lbl">K meq</div></div>
+      <div class="frp-metric ce"><div class="frp-metric-val" style="color:${colorCE(avg.CE_dS_m)}">${fv(avg.CE_dS_m,2)}</div><div class="frp-metric-lbl">CE dS/m</div></div>
+    </div>`;
+
+  // Triángulo textural con valores promedio
+  let triHtml = '';
+  if(arena!=null||limo!=null||arcilla!=null){
+    const info = tipoTextura ? getInfoTextura(tipoTextura) : null;
+    const tot  = (arena||0)+(limo||0)+(arcilla||0);
+    const aN = tot>0 ? ((arena||0)/tot*100).toFixed(1) : '—';
+    const lN = tot>0 ? ((limo||0)/tot*100).toFixed(1)  : '—';
+    const cN = tot>0 ? ((arcilla||0)/tot*100).toFixed(1): '—';
+
+    triHtml = `
+      <div class="frp-section-title" style="margin-top:14px">🪨 Triángulo Textural USDA — Promedio de la Selección</div>
+      <div class="frp-triangle-wrap">
+        <div class="triangle-svg-box"><svg id="frp-tri-svg" width="200" height="185"></svg></div>
+        <div class="frp-tri-info">
+          ${tipoTextura ? `
+            <div class="frp-tri-type">${tipoTextura}</div>
+            <div class="frp-tri-ideal">${info.ideal}</div>
+            <div class="frp-tri-desc">${info.desc}</div>
+            <div class="frp-tex-bar">
+              <div class="frp-tex-seg" style="width:${aN}%;background:rgba(210,153,34,0.85)">${parseFloat(aN)>8?aN+'%':''}</div>
+              <div class="frp-tex-seg" style="width:${lN}%;background:rgba(88,166,255,0.8)">${parseFloat(lN)>8?lN+'%':''}</div>
+              <div class="frp-tex-seg" style="width:${cN}%;background:rgba(248,81,73,0.8)">${parseFloat(cN)>8?cN+'%':''}</div>
+            </div>
+            <div class="frp-tex-legend">
+              <span><i class="frp-dot" style="background:rgba(210,153,34,0.85)"></i>Arena ${aN}%</span>
+              <span><i class="frp-dot" style="background:rgba(88,166,255,0.8)"></i>Limo ${lN}%</span>
+              <span><i class="frp-dot" style="background:rgba(248,81,73,0.8)"></i>Arcilla ${cN}%</span>
+            </div>
+            <div class="frp-tri-props" style="margin-top:8px">
+              ${[['Drenaje',info.drenaje],['Retención',info.retencion],['Labranza',info.labranza],['Fertilidad',info.fertilidad]].map(([k,v])=>`<div class="frp-tri-prop"><div class="frp-tri-prop-k">${k}</div><div class="frp-tri-prop-v">${v}</div></div>`).join('')}
+            </div>
+            ${info.adv?`<div class="frp-tri-adv">⚠ ${info.adv}</div>`:''}
+            <div style="margin-top:8px">
+              <div class="frp-tri-prop-k" style="margin-bottom:4px">Cultivos recomendados por textura</div>
+              <div class="frp-cultivos-recomendados">
+                ${info.cultivos.map(c=>`<span class="tag" style="color:var(--accent);border-color:rgba(57,211,83,.3)">${c}</span>`).join('')}
+              </div>
+            </div>`
+          : `<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">No hay datos de textura suficientes en la selección.</div>`}
+        </div>
+      </div>`;
+  }
+
+  // ── COLUMNA DERECHA: recomendaciones ──
+  const alerts = d.alertas||[];
+  const recs   = d.recomendaciones||[];
+  const alertsHtml = alerts.map(a=>`<li class="alert"><span class="ri">⚠</span>${a}</li>`).join('');
+  const recsHtml   = recs.map(r=>`<li class="rec"><span class="ri">✓</span>${r}</li>`).join('');
+
+  // Nota sobre cultivo filtrado
+  const cultivoSeleccionado = document.getElementById('f-cultivo')?.value||'all';
+  const cultivoNota = cultivoSeleccionado!=='all'
+    ? `<div style="margin-bottom:10px;padding:7px 10px;background:rgba(0,213,163,.07);border-left:2px solid var(--accent2);border-radius:4px;font-size:11px;color:var(--text2)">
+        🌾 Recomendaciones específicas para <strong style="color:var(--accent2)">${cultivoSeleccionado}</strong> incluidas.
+       </div>` : '';
+
+  const colIzq = metricsHtml + triHtml;
+  const colDer = `
+    <div class="frp-section-title">Recomendaciones Agronómicas para la Selección</div>
+    ${cultivoNota}
+    <ul class="frp-recs-list">${alertsHtml}${recsHtml||'<li class="rec"><span class="ri">✓</span>Sin observaciones críticas en la selección actual.</li>'}</ul>`;
+
+  document.getElementById('frp-body').innerHTML = `
+    <div class="frp-col">${colIzq}</div>
+    <div class="frp-col">${colDer}</div>`;
+
+  // Renderizar el triángulo SVG después de que el DOM esté en el panel
+  if(arena!=null||limo!=null||arcilla!=null){
+    setTimeout(()=>buildTriangle(document.getElementById('frp-tri-svg'), arena, limo, arcilla), 60);
+  }
 }
 
 function fmtVal(v){ return v!=null?Number(v).toFixed(2):'<span style="color:var(--text3)">—</span>'; }
