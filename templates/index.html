@@ -158,69 +158,105 @@ table.data-table tr:last-child td{border-bottom:none}
 .tag{display:inline-block;padding:1px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 @media(max-width:900px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.chart-grid{grid-template-columns:1fr}.predictor-grid{grid-template-columns:1fr}}
 
-/* ══════════════════════════════════════════════════
-   PANEL DE RECOMENDACIÓN CONTEXTUAL — VISTA DATOS
-   ══════════════════════════════════════════════════ */
-#filter-rec-panel{display:none;margin-bottom:18px;border-radius:10px;overflow:hidden;border:1px solid var(--border2);animation:slideUp .25s ease}
-.frp-header{background:linear-gradient(90deg,rgba(57,211,83,.13),rgba(0,213,163,.06));padding:13px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border2);gap:12px;flex-wrap:wrap}
+/* ══ PANEL DE RECOMENDACIÓN NARRATIVA — VISTA DATOS ══════════════ */
+#filter-rec-panel{display:none;margin-bottom:18px;border-radius:10px;overflow:hidden;border:1px solid rgba(57,211,83,.25);animation:slideUp .25s ease;box-shadow:0 4px 24px rgba(0,0,0,.2)}
+.frp-header{background:linear-gradient(90deg,rgba(57,211,83,.13),rgba(0,213,163,.05));padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border2);gap:12px;flex-wrap:wrap}
 .frp-header-left{display:flex;align-items:center;gap:10px}
 .frp-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text)}
-.frp-context{display:flex;gap:6px;flex-wrap:wrap}
+.frp-context{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
 .frp-tag{font-size:10px;font-family:'DM Mono',monospace;padding:2px 9px;border-radius:20px;border:1px solid}
 .frp-tag.cultivo{background:rgba(0,213,163,.1);border-color:rgba(0,213,163,.3);color:var(--accent2)}
 .frp-tag.municipio{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:var(--blue)}
 .frp-tag.count{background:rgba(57,211,83,.1);border-color:rgba(57,211,83,.3);color:var(--accent)}
 .frp-badge-estado{font-size:10px;font-family:'DM Mono',monospace;padding:3px 10px;border-radius:20px;font-weight:700}
-.frp-body{background:var(--bg2);display:grid;grid-template-columns:1fr 1fr;gap:0}
-.frp-col{padding:18px}
-.frp-col:first-child{border-right:1px solid var(--border2)}
-.frp-section-title{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border2)}
-/* Métricas promedio */
-.frp-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
-.frp-metric{background:var(--bg3);border-radius:6px;padding:8px 10px;text-align:center}
-.frp-metric-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;line-height:1}
-.frp-metric-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:3px;text-transform:uppercase}
-.frp-metric.ph .frp-metric-val{color:var(--blue)}
-.frp-metric.mo .frp-metric-val{color:var(--green)}
-.frp-metric.p  .frp-metric-val{color:var(--yellow)}
-.frp-metric.al .frp-metric-val{color:var(--red)}
-.frp-metric.k  .frp-metric-val{color:var(--purple)}
-.frp-metric.ce .frp-metric-val{color:var(--accent2)}
-/* Triángulo textural embebido */
-.frp-triangle-wrap{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
-.frp-tri-info{flex:1;min-width:0}
-.frp-tri-type{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--text);margin-bottom:2px}
-.frp-tri-ideal{font-size:10px;color:var(--accent2);font-family:'DM Mono',monospace;margin-bottom:6px}
+/* Layout del cuerpo: columna única, todo apilado */
+.frp-body{background:var(--bg2);display:flex;flex-direction:column}
+.frp-col{padding:20px}
+.frp-col-left{border-bottom:1px solid var(--border2)}
+.frp-chat-wrap{padding:20px}
+.frp-section-lbl{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid var(--border2)}
+/* Métricas semáforo */
+.frp-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px}
+.frp-metric{background:var(--bg3);border-radius:6px;padding:8px 6px;text-align:center}
+.frp-metric-val{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;line-height:1}
+.frp-metric-lbl{font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);margin-top:2px;text-transform:uppercase}
+/* Triángulo en el panel */
+.frp-tri-wrap{display:flex;flex-direction:column;gap:10px}
+.frp-tri-type{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text);margin-bottom:2px}
+.frp-tri-ideal{font-size:10px;color:var(--accent2);font-family:'DM Mono',monospace;margin-bottom:4px}
 .frp-tri-desc{font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:8px}
-.frp-tri-props{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
-.frp-tri-prop{background:var(--bg3);border-radius:5px;padding:5px 8px}
+.frp-tex-bar{display:flex;height:16px;border-radius:4px;overflow:hidden;gap:1px;margin-bottom:4px}
+.frp-tex-seg{display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;font-family:'DM Mono',monospace;color:#000;min-width:0}
+.frp-tex-legend{display:flex;gap:8px;flex-wrap:wrap}
+.frp-tex-legend span{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:3px}
+.frp-dot{width:6px;height:6px;border-radius:2px;display:inline-block;flex-shrink:0}
+.frp-tri-props{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:8px 0}
+.frp-tri-prop{background:var(--bg3);border-radius:4px;padding:5px 7px}
 .frp-tri-prop-k{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace}
 .frp-tri-prop-v{font-size:11px;color:var(--text);margin-top:1px}
-.frp-tri-adv{padding:7px 10px;background:rgba(248,81,73,.07);border-left:2px solid var(--red);border-radius:4px;font-size:10px;color:var(--text2);line-height:1.5}
-.frp-tex-bar{display:flex;height:18px;border-radius:4px;overflow:hidden;gap:1px;margin-bottom:5px}
-.frp-tex-seg{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'DM Mono',monospace;color:#000;min-width:0}
-.frp-tex-legend{display:flex;gap:10px;flex-wrap:wrap}
-.frp-tex-legend span{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:3px}
-.frp-dot{width:7px;height:7px;border-radius:2px;display:inline-block;flex-shrink:0}
-/* Recomendaciones dentro del panel */
-.frp-recs-list{list-style:none;display:flex;flex-direction:column;gap:6px}
-.frp-recs-list li{padding:8px 11px;border-radius:6px;font-size:11px;line-height:1.55;display:flex;align-items:flex-start;gap:7px}
-.frp-recs-list li.alert{background:rgba(248,81,73,.07);border-left:2px solid var(--red);color:var(--text)}
-.frp-recs-list li.rec  {background:rgba(57,211,83,.06);border-left:2px solid var(--green);color:var(--text)}
-.frp-recs-list li .ri{font-size:12px;flex-shrink:0;margin-top:1px}
-.frp-recs-list li.alert .ri{color:var(--red)}.frp-recs-list li.rec .ri{color:var(--green)}
-.frp-cultivos-recomendados{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
-.frp-loading{padding:28px;text-align:center;color:var(--text3);font-family:'DM Mono',monospace;font-size:11px;display:flex;align-items:center;justify-content:center;gap:10px}
-@media(max-width:860px){.frp-body{grid-template-columns:1fr}.frp-col:first-child{border-right:none;border-bottom:1px solid var(--border2)}.frp-metrics{grid-template-columns:repeat(3,1fr)}}
+.frp-tri-adv{padding:6px 9px;background:rgba(248,81,73,.07);border-left:2px solid var(--red);border-radius:4px;font-size:10px;color:var(--text2);line-height:1.5;margin-top:6px}
+/* Narrativa */
+.frp-narrative{font-size:13px;line-height:1.85;color:var(--text2)}
+.frp-narrative p{margin-bottom:12px}
+.frp-narrative p:last-child{margin-bottom:0}
+.frp-narrative strong{color:var(--text)}
+.frp-narrative em{color:var(--accent2);font-style:normal}
+/* Paragraphs con ícono lateral */
+.frp-paragraph{display:flex;gap:10px;padding:10px 12px;border-radius:6px;margin-bottom:8px;background:var(--bg3);border-left:2px solid var(--border)}
+.frp-paragraph.alert{background:rgba(248,81,73,.06);border-left-color:var(--red)}
+.frp-paragraph.ok{background:rgba(57,211,83,.05);border-left-color:var(--green)}
+.frp-paragraph.warn{background:rgba(210,153,34,.05);border-left-color:var(--yellow)}
+.frp-paragraph.info{background:rgba(88,166,255,.05);border-left-color:var(--blue)}
+.frp-paragraph.tip{background:rgba(0,213,163,.05);border-left-color:var(--accent2)}
+.frp-paragraph-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.frp-paragraph-text{font-size:12px;line-height:1.7;color:var(--text2)}
+.frp-paragraph-text strong{color:var(--text)}
+.frp-loading{padding:28px;text-align:center;color:var(--text3);font-family:'DM Mono',monospace;font-size:11px;display:flex;align-items:center;justify-content:center;gap:10px;grid-column:1/-1}
+/* Filtros dependientes — indicador de carga */
+.filter-input.updating{border-color:var(--accent);opacity:.7}
+.filter-dep-note{font-size:9px;font-family:'DM Mono',monospace;color:var(--accent);margin-top:2px;height:12px;transition:opacity .2s}
+@media(max-width:900px){.frp-col-left{border-bottom:1px solid var(--border2)}}
+
+/* Narrativa como bloque continuo debajo del triángulo */
+.frp-narrative-prose{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+
+/* ══ CHAT-STYLE NARRATIVE ════════════════════════════════════════ */
+.frp-chat-wrap{padding:20px;border-top:1px solid var(--border2)}
+.frp-chat-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.frp-chat-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;box-shadow:0 0 0 3px rgba(57,211,83,.15)}
+.frp-chat-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
+.frp-chat-role{font-size:10px;font-family:'DM Mono',monospace;color:var(--accent2);display:block;margin-top:1px}
+.frp-chat-bubble{background:var(--bg3);border:1px solid var(--border2);border-radius:0 12px 12px 12px;padding:18px 20px;position:relative;font-size:13px;line-height:1.9;color:var(--text2)}
+.frp-chat-bubble strong{color:var(--text);font-weight:600}
+.frp-chat-bubble em{color:var(--accent2);font-style:normal}
+.frp-chat-bubble .chat-para{margin-bottom:14px}
+.frp-chat-bubble .chat-para:last-child{margin-bottom:0}
+.frp-chat-bubble .chat-tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:20px;margin-bottom:10px}
+.frp-chat-bubble .chat-tag.alert{background:rgba(248,81,73,.12);color:var(--red);border:1px solid rgba(248,81,73,.25)}
+.frp-chat-bubble .chat-tag.ok{background:rgba(57,211,83,.1);color:var(--green);border:1px solid rgba(57,211,83,.2)}
+.frp-chat-bubble .chat-tag.warn{background:rgba(210,153,34,.1);color:var(--yellow);border:1px solid rgba(210,153,34,.2)}
+.frp-chat-cursor{display:inline-block;width:2px;height:14px;background:var(--accent);border-radius:1px;margin-left:2px;vertical-align:middle;animation:blink .9s steps(1) infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.frp-chat-typing{display:flex;align-items:center;gap:5px;padding:10px 16px;color:var(--text3);font-size:11px;font-family:'DM Mono',monospace}
+.frp-chat-typing .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bounce .9s ease infinite}
+.frp-chat-typing .dot:nth-child(2){animation-delay:.15s}
+.frp-chat-typing .dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+
+/* ══ MEJORAS DE ESPACIADO GLOBAL ══════════════════════════════════ */
+.section-header{margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border2)}
+.kpi-grid{margin-bottom:28px}
+.chart-card .chart-title{padding-bottom:10px;border-bottom:1px solid var(--border2);margin-bottom:16px}
+.pred-inputs .pred-input-group label{font-weight:500;letter-spacing:.2px}
+.predictor-grid>div:first-child{display:flex;flex-direction:column;gap:16px}
 </style>
 </head>
 <body>
 
 <nav class="sidebar">
   <div class="sidebar-logo">
-
     <h1>🌱 AgroecologIA</h1>
-    <h5>   Orientaciones presuntivas en cultivos agroecológicos</h5>
+    <p style="font-size:11px;color:var(--text2);margin-top:4px;margin-bottom:2px;line-height:1.4">Orientaciones presuntivas en cultivos agroecológicos</p>
     <span>v2.0 · Sistema de Análisis</span>
   </div>
   <div class="sidebar-nav">
@@ -253,52 +289,84 @@ table.data-table tr:last-child td{border-bottom:none}
         <div class="kpi-card purple"><div class="kpi-label">pH Promedio</div><div class="kpi-val" id="kpi-ph">—</div><div class="kpi-sub">Reacción del suelo</div></div>
         <div class="kpi-card green"><div class="kpi-label">MO Promedio</div><div class="kpi-val" id="kpi-mo">—</div><div class="kpi-sub">% Materia orgánica</div></div>
       </div>
-      <div class="chart-grid">
-        <div class="chart-card"><div class="chart-title">Distribución de pH <span class="chart-subtitle">Acidez del suelo</span></div><div class="chart-wrap"><canvas id="chart-ph"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">Estado de Muestras <span class="chart-subtitle">Clasificación IA</span></div><div class="chart-wrap"><canvas id="chart-estado"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">Top Cultivos <span class="chart-subtitle">Por frecuencia</span></div><div class="chart-wrap"><canvas id="chart-cultivos"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">Materia Orgánica <span class="chart-subtitle">Distribución %</span></div><div class="chart-wrap"><canvas id="chart-mo"></canvas></div></div>
-        <div class="chart-card wide"><div class="chart-title">Tendencia Temporal <span class="chart-subtitle">Muestras por año</span></div><div class="chart-wrap"><canvas id="chart-trend"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">Textura del Suelo <span class="chart-subtitle">Tipos principales</span></div><div class="chart-wrap"><canvas id="chart-textura"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">Top Municipios <span class="chart-subtitle">Por muestra</span></div><div class="chart-wrap"><canvas id="chart-mun"></canvas></div></div>
+
+      <div style="margin-bottom:8px">
+        <div class="chart-title" style="font-size:14px;margin-bottom:14px">Distribuciones y Tendencias</div>
+        <div class="chart-grid">
+          <div class="chart-card"><div class="chart-title">Distribución de pH <span class="chart-subtitle">Acidez del suelo</span></div><div class="chart-wrap"><canvas id="chart-ph"></canvas></div></div>
+          <div class="chart-card"><div class="chart-title">Estado de Muestras <span class="chart-subtitle">Clasificación IA</span></div><div class="chart-wrap"><canvas id="chart-estado"></canvas></div></div>
+          <div class="chart-card"><div class="chart-title">Top Cultivos <span class="chart-subtitle">Por frecuencia</span></div><div class="chart-wrap"><canvas id="chart-cultivos"></canvas></div></div>
+          <div class="chart-card"><div class="chart-title">Materia Orgánica <span class="chart-subtitle">Distribución %</span></div><div class="chart-wrap"><canvas id="chart-mo"></canvas></div></div>
+          <div class="chart-card wide"><div class="chart-title">Tendencia Temporal <span class="chart-subtitle">Muestras por año</span></div><div class="chart-wrap"><canvas id="chart-trend"></canvas></div></div>
+          <div class="chart-card"><div class="chart-title">Textura del Suelo <span class="chart-subtitle">Tipos principales</span></div><div class="chart-wrap"><canvas id="chart-textura"></canvas></div></div>
+          <div class="chart-card"><div class="chart-title">Top Municipios <span class="chart-subtitle">Por muestra</span></div><div class="chart-wrap"><canvas id="chart-mun"></canvas></div></div>
+        </div>
       </div>
-      <div class="chart-card">
+
+      <div class="chart-card" style="margin-top:8px">
         <div class="chart-title">Estadísticas Numéricas Clave</div>
-        <table class="stats-table"><thead><tr><th>Parámetro</th><th>Mín</th><th>Q25</th><th>Mediana</th><th>Media</th><th>Q75</th><th>Máx</th><th>Desv. Est.</th></tr></thead><tbody id="stats-body"></tbody></table>
+        <div style="overflow-x:auto;margin-top:4px">
+          <table class="stats-table"><thead><tr><th>Parámetro</th><th>Mín</th><th>Q25</th><th>Mediana</th><th>Media</th><th>Q75</th><th>Máx</th><th>Desv. Est.</th></tr></thead><tbody id="stats-body"></tbody></table>
+        </div>
       </div>
     </div>
 
     <!-- DATOS -->
     <div class="view" id="view-data">
       <div class="section-header"><h2 class="section-title">Base de Datos</h2><span class="section-count" id="data-count">Cargando...</span></div>
-      <div class="filter-bar">
-        <div class="filter-group wide"><label class="filter-label">Buscar</label><input type="text" class="filter-input" id="f-search" placeholder="Código, cultivo, municipio..." oninput="debounceFilter()"></div>
-        <div class="filter-group"><label class="filter-label">Cultivo</label><select class="filter-input" id="f-cultivo" onchange="applyFilters()"><option value="all">Todos</option></select></div>
-        <div class="filter-group"><label class="filter-label">Municipio</label><select class="filter-input" id="f-municipio" onchange="applyFilters()"><option value="all">Todos</option></select></div>
-        <div class="filter-group"><label class="filter-label">Tipo Suelo</label><select class="filter-input" id="f-tipo-suelo" onchange="applyFilters()"><option value="all">Todos</option></select></div>
-        <div class="filter-group"><label class="filter-label">Estado</label><select class="filter-input" id="f-estado" onchange="applyFilters()"><option value="all">Todos</option><option value="Óptimo">Óptimo</option><option value="Medio">Medio</option><option value="Crítico">Crítico</option></select></div>
-        <div class="filter-group"><label class="filter-label">pH (rango)</label><div class="range-inputs"><input type="number" class="filter-input" id="f-ph-min" placeholder="Min" step="0.1" style="width:70px" oninput="debounceFilter()"><span>—</span><input type="number" class="filter-input" id="f-ph-max" placeholder="Max" step="0.1" style="width:70px" oninput="debounceFilter()"></div></div>
-        <div class="filter-group"><label class="filter-label">MO % (rango)</label><div class="range-inputs"><input type="number" class="filter-input" id="f-mo-min" placeholder="Min" step="0.1" style="width:70px" oninput="debounceFilter()"><span>—</span><input type="number" class="filter-input" id="f-mo-max" placeholder="Max" step="0.1" style="width:70px" oninput="debounceFilter()"></div></div>
-        <div class="filter-group" style="justify-content:flex-end"><button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕ Limpiar</button></div>
+
+      <div class="chart-card" style="margin-bottom:16px;padding:18px 20px">
+        <div class="chart-title" style="margin-bottom:14px">Filtros de Búsqueda</div>
+        <div class="filter-bar" style="border:none;padding:0;background:transparent;margin-bottom:0">
+          <div class="filter-group wide"><label class="filter-label">Buscar</label><input type="text" class="filter-input" id="f-search" placeholder="Código, cultivo, municipio..." oninput="debounceFilter()"></div>
+          <div class="filter-group">
+            <label class="filter-label">Cultivo</label>
+            <select class="filter-input" id="f-cultivo" onchange="onFilterChange('cultivo')"><option value="all">Todos</option></select>
+            <div class="filter-dep-note" id="dep-cultivo"></div>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Municipio</label>
+            <select class="filter-input" id="f-municipio" onchange="onFilterChange('municipio')"><option value="all">Todos</option></select>
+            <div class="filter-dep-note" id="dep-municipio"></div>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Tipo Suelo</label>
+            <select class="filter-input" id="f-tipo-suelo" onchange="onFilterChange('tipo-suelo')"><option value="all">Todos</option></select>
+            <div class="filter-dep-note" id="dep-tipo-suelo"></div>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Estado</label>
+            <select class="filter-input" id="f-estado" onchange="onFilterChange('estado')">
+              <option value="all">Todos</option>
+              <option value="Óptimo">Óptimo</option>
+              <option value="Medio">Medio</option>
+              <option value="Crítico">Crítico</option>
+            </select>
+            <div class="filter-dep-note" id="dep-estado"></div>
+          </div>
+          <div class="filter-group"><label class="filter-label">pH (rango)</label><div class="range-inputs"><input type="number" class="filter-input" id="f-ph-min" placeholder="Min" step="0.1" style="width:70px" oninput="debounceFilter()"><span>—</span><input type="number" class="filter-input" id="f-ph-max" placeholder="Max" step="0.1" style="width:70px" oninput="debounceFilter()"></div></div>
+          <div class="filter-group"><label class="filter-label">MO % (rango)</label><div class="range-inputs"><input type="number" class="filter-input" id="f-mo-min" placeholder="Min" step="0.1" style="width:70px" oninput="debounceFilter()"><span>—</span><input type="number" class="filter-input" id="f-mo-max" placeholder="Max" step="0.1" style="width:70px" oninput="debounceFilter()"></div></div>
+          <div class="filter-group" style="justify-content:flex-end"><button class="btn btn-ghost btn-sm" onclick="clearFilters()">✕ Limpiar</button></div>
+        </div>
       </div>
 
-      <!-- ── Panel de Recomendación Contextual ── -->
+      <!-- Panel de Recomendación Agronómica Narrativa -->
       <div id="filter-rec-panel">
         <div class="frp-header">
           <div class="frp-header-left">
-            <span style="font-size:16px">🌱</span>
+            <span style="font-size:18px">🌱</span>
             <div>
-              <div class="frp-title">Recomendación Agronómica para la Selección Filtrada</div>
-              <div class="frp-context" id="frp-context-tags" style="margin-top:4px"></div>
+              <div class="frp-title">Diagnóstico y Recomendación Agronómica</div>
+              <div class="frp-context" id="frp-context-tags"></div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
             <span id="frp-estado-badge" class="frp-badge-estado"></span>
-            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('filter-rec-panel').style.display='none'" style="font-size:11px">✕</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('filter-rec-panel').style.display='none'">✕</button>
           </div>
         </div>
         <div class="frp-body" id="frp-body">
-          <div class="frp-loading"><div class="spinner"></div> Calculando recomendaciones…</div>
+          <div class="frp-loading"><div class="spinner"></div> Calculando…</div>
         </div>
       </div>
 
@@ -317,7 +385,7 @@ table.data-table tr:last-child td{border-bottom:none}
       <div class="predictor-grid">
         <div>
           <div class="chart-card">
-            <div class="chart-title">Parámetros del Suelo</div>
+            <div class="chart-title" style="margin-bottom:16px">Parámetros del Suelo</div>
             <div class="pred-inputs">
               <div class="pred-input-group"><label>pH</label><input type="number" class="filter-input" id="p-ph" placeholder="ej: 6.2" step="0.1" min="3" max="10"></div>
               <div class="pred-input-group"><label>MO (%)</label><input type="number" class="filter-input" id="p-mo" placeholder="ej: 3.5" step="0.1"></div>
@@ -357,14 +425,14 @@ table.data-table tr:last-child td{border-bottom:none}
                 <option value="marañon">Marañón</option>
               </select>
             </div>
-            <div style="margin-top:14px;display:flex;gap:8px">
+            <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border2);display:flex;gap:8px">
               <button class="btn btn-primary" onclick="runPrediction()" style="flex:1">◈ Predecir Estado</button>
               <button class="btn btn-ghost" onclick="getLocalRecs()">✦ Recomendaciones</button>
             </div>
           </div>
 
           <!-- Triángulo del predictor -->
-          <div class="chart-card" style="margin-top:16px">
+          <div class="chart-card">
             <div class="chart-title">🪨 Triángulo Textural USDA <span class="chart-subtitle" id="pred-soil-label">Ingresa arena, limo y arcilla</span></div>
             <div class="triangle-wrap">
               <div class="triangle-svg-box"><svg id="pred-tri-svg" width="270" height="248"></svg></div>
@@ -375,14 +443,14 @@ table.data-table tr:last-child td{border-bottom:none}
           </div>
         </div>
 
-        <div>
+        <div style="display:flex;flex-direction:column;gap:16px">
           <div class="pred-result" id="pred-result">
             <span style="font-size:40px">◈</span>
             <div class="pred-result-label" style="margin-top:10px">Ingresa los datos y presiona Predecir</div>
           </div>
-          <div class="chart-card" id="pred-recs-card" style="margin-top:16px;display:none">
-            <div class="chart-title">✦ Recomendaciones Generadas</div>
-            <ul class="rec-list" id="pred-rec-list"></ul>
+          <div class="chart-card" id="pred-recs-card" style="display:none">
+            <div class="chart-title" style="margin-bottom:14px">✦ Recomendaciones Generadas</div>
+            <div id="pred-rec-list" style="font-size:13px;line-height:1.85;color:var(--text2)"></div>
           </div>
         </div>
       </div>
@@ -698,31 +766,112 @@ function buildStatsTable(stats){
 function fmt(v){ return v!=null?Number(v).toFixed(2):'—'; }
 
 // ═══════════════════════════════════════════════
-// FILTROS Y TABLA
+// FILTROS DINÁMICOS DEPENDIENTES
 // ═══════════════════════════════════════════════
+// Opciones base (todo el dataset) — se cargan una sola vez
+let BASE_CULTIVOS=[], BASE_MUNICIPIOS=[], BASE_TIPOS_SUELO=[], BASE_ESTADOS=[];
+let filterDepTimer=null;
+
 async function loadFilters(){
   const data=await fetch('/api/filters').then(r=>r.json());
-  const populate=(id,items)=>{
-    const sel=document.getElementById(id);
-    items.forEach(v=>{if(!v||v==='Nan')return;const o=document.createElement('option');o.value=o.textContent=v;sel.appendChild(o);});
+  BASE_CULTIVOS    = data.cultivos;
+  BASE_MUNICIPIOS  = data.municipios;
+  BASE_TIPOS_SUELO = data.tipos_suelo;
+  BASE_ESTADOS     = data.estados;
+  populateSelect('f-cultivo',   BASE_CULTIVOS,    'Todos los cultivos');
+  populateSelect('f-municipio', BASE_MUNICIPIOS,  'Todos los municipios');
+  populateSelect('f-tipo-suelo',BASE_TIPOS_SUELO, 'Todos los tipos');
+}
+
+function populateSelect(id, items, placeholder, currentVal='all'){
+  const sel=document.getElementById(id);
+  const prev=sel.value;
+  sel.innerHTML=`<option value="all">${placeholder||'Todos'}</option>`;
+  items.forEach(v=>{
+    const o=document.createElement('option');
+    o.value=o.textContent=v;
+    if(v===prev||v===currentVal) o.selected=true;
+    sel.appendChild(o);
+  });
+  // Restaurar valor si sigue siendo válido
+  if(items.includes(prev)) sel.value=prev;
+}
+
+// Llamado cada vez que cambia un filtro de selector
+function onFilterChange(changed){
+  currentPage=1;
+  // Actualizar los otros filtros dependientes con un pequeño delay
+  clearTimeout(filterDepTimer);
+  filterDepTimer=setTimeout(()=>updateDependentFilters(changed), 180);
+  applyFilters();
+}
+
+async function updateDependentFilters(changed){
+  const cultivo   =document.getElementById('f-cultivo')?.value||'all';
+  const municipio =document.getElementById('f-municipio')?.value||'all';
+  const tipoSuelo =document.getElementById('f-tipo-suelo')?.value||'all';
+  const estado    =document.getElementById('f-estado')?.value||'all';
+
+  // Solo refrescar si al menos un filtro está activo
+  const anyActive= cultivo!=='all'||municipio!=='all'||tipoSuelo!=='all'||estado!=='all';
+  if(!anyActive){
+    // Restaurar todas las opciones base
+    populateSelect('f-cultivo',   BASE_CULTIVOS,    'Todos los cultivos');
+    populateSelect('f-municipio', BASE_MUNICIPIOS,  'Todos los municipios');
+    populateSelect('f-tipo-suelo',BASE_TIPOS_SUELO, 'Todos los tipos');
+    ['cultivo','municipio','tipo-suelo','estado'].forEach(id=>{
+      const el=document.getElementById('dep-'+id);
+      if(el) el.textContent='';
+    });
+    return;
+  }
+
+  const params=new URLSearchParams({cultivo,municipio,tipo_suelo:tipoSuelo,estado});
+  const data=await fetch('/api/filters-dynamic?'+params).then(r=>r.json());
+
+  // Actualizar cada selector con las opciones válidas (sin tocar el que acaba de cambiar)
+  const updates={
+    'f-cultivo':    {items:data.cultivos,    label:'Todos los cultivos',    depId:'dep-cultivo'},
+    'f-municipio':  {items:data.municipios,  label:'Todos los municipios',  depId:'dep-municipio'},
+    'f-tipo-suelo': {items:data.tipos_suelo, label:'Todos los tipos',       depId:'dep-tipo-suelo'},
+    'f-estado':     {items:data.estados,     label:'Todos los estados',     depId:'dep-estado'},
   };
-  populate('f-cultivo',data.cultivos);
-  populate('f-municipio',data.municipios);
-  populate('f-tipo-suelo',data.tipos_suelo);
+
+  for(const [selId, cfg] of Object.entries(updates)){
+    const sel=document.getElementById(selId);
+    if(!sel) continue;
+    const currentVal=sel.value;
+    populateSelect(selId, cfg.items, cfg.label);
+    // Indicador de cuántas opciones quedan
+    const depEl=document.getElementById(cfg.depId);
+    if(depEl){
+      if(cfg.items.length < (selId==='f-cultivo'?BASE_CULTIVOS.length:
+         selId==='f-municipio'?BASE_MUNICIPIOS.length:
+         selId==='f-tipo-suelo'?BASE_TIPOS_SUELO.length:3)){
+        depEl.textContent=`↳ ${cfg.items.length} opción${cfg.items.length!==1?'es':''} disponible${cfg.items.length!==1?'s':''}`;
+      } else {
+        depEl.textContent='';
+      }
+    }
+    // Si el valor previo ya no es válido, resetear a 'all'
+    if(currentVal!=='all' && !cfg.items.includes(currentVal)){
+      sel.value='all';
+    }
+  }
 }
 
 function getFilterParams(){
   return new URLSearchParams({
-    cultivo:document.getElementById('f-cultivo')?.value||'all',
-    municipio:document.getElementById('f-municipio')?.value||'all',
-    tipo_suelo:document.getElementById('f-tipo-suelo')?.value||'all',
-    estado:document.getElementById('f-estado')?.value||'all',
-    ph_min:document.getElementById('f-ph-min')?.value||'',
-    ph_max:document.getElementById('f-ph-max')?.value||'',
-    mo_min:document.getElementById('f-mo-min')?.value||'',
-    mo_max:document.getElementById('f-mo-max')?.value||'',
-    search:document.getElementById('f-search')?.value||'',
-    page:currentPage,per_page:25
+    cultivo:    document.getElementById('f-cultivo')?.value||'all',
+    municipio:  document.getElementById('f-municipio')?.value||'all',
+    tipo_suelo: document.getElementById('f-tipo-suelo')?.value||'all',
+    estado:     document.getElementById('f-estado')?.value||'all',
+    ph_min:     document.getElementById('f-ph-min')?.value||'',
+    ph_max:     document.getElementById('f-ph-max')?.value||'',
+    mo_min:     document.getElementById('f-mo-min')?.value||'',
+    mo_max:     document.getElementById('f-mo-max')?.value||'',
+    search:     document.getElementById('f-search')?.value||'',
+    page:currentPage, per_page:25
   });
 }
 
@@ -732,179 +881,273 @@ async function loadData(){
   const data=await fetch('/api/data?'+getFilterParams()).then(r=>r.json());
   totalPages=data.pages;
   document.getElementById('data-count').textContent=`${data.total.toLocaleString()} registros`;
-  if(data.records.length===0){tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><div class="emoji">🔍</div><p>No se encontraron registros.</p></div></td></tr>';document.getElementById('pagination').innerHTML='';return;}
-  tbody.innerHTML=data.records.map(r=>`<tr><td>${r.cod_muestra||'—'}</td><td>${r.cultivo||'—'}</td><td>${r.municipio||'—'}</td><td class="text-mono">${fmtVal(r.pH)}</td><td class="text-mono">${fmtVal(r.MO_pct)}</td><td class="text-mono">${fmtVal(r.P_disponible_ppm)}</td><td class="text-mono">${fmtVal(r.Al_meq_100g)}</td><td class="text-mono">${fmtVal(r.CE_dS_m)}</td><td>${r.tipo_suelo||'—'}</td><td>${estadoBadge(r.estado)}</td><td class="text-mono" style="color:var(--text3);font-size:11px">${r.fecha_muestra?r.fecha_muestra.split(' ')[0]:'—'}</td><td><button class="btn btn-ghost btn-sm" onclick="openRecord('${r.cod_muestra}')">Ver</button></td></tr>`).join('');
+  if(data.records.length===0){
+    tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><div class="emoji">🔍</div><p>No se encontraron registros con los filtros actuales.</p></div></td></tr>';
+    document.getElementById('pagination').innerHTML='';
+    document.getElementById('filter-rec-panel').style.display='none';
+    return;
+  }
+  tbody.innerHTML=data.records.map(r=>`<tr>
+    <td>${r.cod_muestra||'—'}</td><td>${r.cultivo||'—'}</td><td>${r.municipio||'—'}</td>
+    <td class="text-mono">${fmtVal(r.pH)}</td><td class="text-mono">${fmtVal(r.MO_pct)}</td>
+    <td class="text-mono">${fmtVal(r.P_disponible_ppm)}</td><td class="text-mono">${fmtVal(r.Al_meq_100g)}</td>
+    <td class="text-mono">${fmtVal(r.CE_dS_m)}</td><td>${r.tipo_suelo||'—'}</td>
+    <td>${estadoBadge(r.estado)}</td>
+    <td class="text-mono" style="color:var(--text3);font-size:11px">${r.fecha_muestra?r.fecha_muestra.split(' ')[0]:'—'}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="openRecord('${r.cod_muestra}')">Ver</button></td>
+  </tr>`).join('');
   buildPagination(data.page,data.pages,data.total);
 
-  // ── Disparar recomendación contextual si hay filtro activo ──
-  const cultivo  = document.getElementById('f-cultivo')?.value||'all';
-  const municipio= document.getElementById('f-municipio')?.value||'all';
-  const tipoSuelo= document.getElementById('f-tipo-suelo')?.value||'all';
-  const estado   = document.getElementById('f-estado')?.value||'all';
-  const hayFiltro= cultivo!=='all'||municipio!=='all'||tipoSuelo!=='all'||estado!=='all';
-
-  if(hayFiltro && data.total > 0){
-    loadFilterRecommendation(data.total);
-  } else {
-    document.getElementById('filter-rec-panel').style.display='none';
-  }
+  // Mostrar panel de recomendación cuando hay filtros activos
+  const cultivo  =document.getElementById('f-cultivo')?.value||'all';
+  const municipio=document.getElementById('f-municipio')?.value||'all';
+  const tipoSuelo=document.getElementById('f-tipo-suelo')?.value||'all';
+  const estado   =document.getElementById('f-estado')?.value||'all';
+  const hayFiltro=cultivo!=='all'||municipio!=='all'||tipoSuelo!=='all'||estado!=='all';
+  if(hayFiltro && data.total>0) loadFilterRecommendation(data.total);
+  else document.getElementById('filter-rec-panel').style.display='none';
 }
 
-// ─────────────────────────────────────────────────────────────
-// PANEL DE RECOMENDACIÓN CONTEXTUAL PARA FILTROS
-// Llama a /api/filter-recommendation con los filtros activos
-// y renderiza diagnóstico + triángulo USDA + recomendaciones
-// ─────────────────────────────────────────────────────────────
-let frpTimer = null;
+// ═══════════════════════════════════════════════
+// PANEL DE RECOMENDACIÓN NARRATIVA
+// ═══════════════════════════════════════════════
+let frpTimer=null;
 
 function loadFilterRecommendation(total){
-  const panel = document.getElementById('filter-rec-panel');
-  panel.style.display = 'block';
+  const panel=document.getElementById('filter-rec-panel');
+  panel.style.display='block';
 
-  // Contexto visible en el header
-  const cultivo  = document.getElementById('f-cultivo')?.value||'all';
-  const municipio= document.getElementById('f-municipio')?.value||'all';
-  const tipoSuelo= document.getElementById('f-tipo-suelo')?.value||'all';
-  const estado   = document.getElementById('f-estado')?.value||'all';
+  const cultivo  =document.getElementById('f-cultivo')?.value||'all';
+  const municipio=document.getElementById('f-municipio')?.value||'all';
+  const tipoSuelo=document.getElementById('f-tipo-suelo')?.value||'all';
+  const estado   =document.getElementById('f-estado')?.value||'all';
 
-  const tags = document.getElementById('frp-context-tags');
-  tags.innerHTML = '';
+  // Tags de contexto en el header
+  const tags=document.getElementById('frp-context-tags');
+  tags.innerHTML='';
   if(cultivo!=='all')   tags.innerHTML+=`<span class="frp-tag cultivo">🌾 ${cultivo}</span>`;
   if(municipio!=='all') tags.innerHTML+=`<span class="frp-tag municipio">📍 ${municipio}</span>`;
   if(tipoSuelo!=='all') tags.innerHTML+=`<span class="frp-tag cultivo">🪨 ${tipoSuelo}</span>`;
   tags.innerHTML+=`<span class="frp-tag count">${total.toLocaleString()} muestras</span>`;
 
   document.getElementById('frp-body').innerHTML=
-    `<div class="frp-loading"><div class="spinner"></div> Calculando recomendaciones para la selección…</div>`;
+    `<div class="frp-loading"><div class="spinner"></div> Analizando la selección y generando recomendaciones…</div>`;
 
   clearTimeout(frpTimer);
-  frpTimer = setTimeout(async ()=>{
+  frpTimer=setTimeout(async()=>{
     try{
-      const params = new URLSearchParams({
-        cultivo, municipio, tipo_suelo: tipoSuelo, estado,
-        ph_min: document.getElementById('f-ph-min')?.value||'',
-        ph_max: document.getElementById('f-ph-max')?.value||'',
-        mo_min: document.getElementById('f-mo-min')?.value||'',
-        mo_max: document.getElementById('f-mo-max')?.value||'',
+      const params=new URLSearchParams({
+        cultivo,municipio,tipo_suelo:tipoSuelo,estado,
+        ph_min:document.getElementById('f-ph-min')?.value||'',
+        ph_max:document.getElementById('f-ph-max')?.value||'',
+        mo_min:document.getElementById('f-mo-min')?.value||'',
+        mo_max:document.getElementById('f-mo-max')?.value||'',
       });
-      const data = await fetch('/api/filter-recommendation?'+params).then(r=>r.json());
-      if(data.error){ document.getElementById('frp-body').innerHTML=`<div class="frp-loading" style="color:var(--red)">⚠ ${data.error}</div>`; return; }
+      const data=await fetch('/api/filter-recommendation?'+params).then(r=>r.json());
+      if(data.error){document.getElementById('frp-body').innerHTML=`<div class="frp-loading" style="color:var(--red)">⚠ ${data.error}</div>`;return;}
       renderFilterRecommendation(data);
     } catch(e){
       document.getElementById('frp-body').innerHTML=`<div class="frp-loading" style="color:var(--red)">⚠ Error de conexión</div>`;
     }
-  }, 350);
+  },400);
 }
 
 function renderFilterRecommendation(d){
-  // Badge de estado predominante
-  const ec = d.estado_counts||{};
-  const estados = [['Óptimo',ec['Óptimo']||0],['Medio',ec['Medio']||0],['Crítico',ec['Crítico']||0]];
-  const dominante = estados.sort((a,b)=>b[1]-a[1])[0][0];
-  const badgeEl = document.getElementById('frp-estado-badge');
-  const badgeMap = {Óptimo:{cls:'badge-optimal',txt:'✅ Predominantemente Óptimo'},Medio:{cls:'badge-medio',txt:'⚠ Predominantemente Medio'},Crítico:{cls:'badge-critico',txt:'❌ Predominantemente Crítico'}};
-  const bm = badgeMap[dominante]||{cls:'badge-nodata',txt:'Estado variado'};
+  // Badge estado dominante
+  const ec=d.estado_counts||{};
+  const dominante=[['Óptimo',ec['Óptimo']||0],['Medio',ec['Medio']||0],['Crítico',ec['Crítico']||0]].sort((a,b)=>b[1]-a[1])[0][0];
+  const badgeMap={Óptimo:{cls:'badge-optimal',txt:'✅ Predominantemente Óptimo'},Medio:{cls:'badge-medio',txt:'⚠ Predominantemente Medio'},Crítico:{cls:'badge-critico',txt:'❌ Predominantemente Crítico'}};
+  const bm=badgeMap[dominante]||{cls:'badge-nodata',txt:'Estado variado'};
+  const badgeEl=document.getElementById('frp-estado-badge');
   badgeEl.className='frp-badge-estado badge '+bm.cls;
   badgeEl.textContent=bm.txt;
 
-  const avg = d.promedios||{};
-  const arena   = avg.arena_pct   !=null ? Number(avg.arena_pct)   : null;
-  const limo    = avg.limo_pct    !=null ? Number(avg.limo_pct)    : null;
-  const arcilla = avg.arcilla_pct !=null ? Number(avg.arcilla_pct) : null;
-  const tipoTextura = d.tipo_suelo_predominante || clasificarTextura(arena, limo, arcilla);
+  const avg=d.promedios||{};
+  const arena=avg.arena_pct!=null?Number(avg.arena_pct):null;
+  const limo =avg.limo_pct !=null?Number(avg.limo_pct) :null;
+  const arcilla=avg.arcilla_pct!=null?Number(avg.arcilla_pct):null;
+  const tipoTextura=d.tipo_suelo_predominante||clasificarTextura(arena,limo,arcilla);
 
-  // Helpers de semáforo de color para valores
-  const colorPH = (v)=> v==null?'var(--text3)': v>=5.5&&v<=7.0?'var(--green)': v>=5.0&&v<=7.5?'var(--yellow)':'var(--red)';
-  const colorMO = (v)=> v==null?'var(--text3)': v>=5?'var(--green)': v>=3?'var(--yellow)':'var(--red)';
-  const colorP  = (v)=> v==null?'var(--text3)': v>=20&&v<=60?'var(--green)': v>=10?'var(--yellow)':'var(--red)';
-  const colorAl = (v)=> v==null?'var(--text3)': v<0.5?'var(--green)': v<1.5?'var(--yellow)':'var(--red)';
-  const colorK  = (v)=> v==null?'var(--text3)': v>=0.4?'var(--green)': v>=0.2?'var(--yellow)':'var(--red)';
-  const colorCE = (v)=> v==null?'var(--text3)': v<=2?'var(--green)': v<=4?'var(--yellow)':'var(--red)';
+  const col=(v,fn)=>v!=null?fn(v):'var(--text3)';
+  const cPH=v=>v<5.0||v>7.5?'var(--red)':v<5.5||v>7.0?'var(--yellow)':'var(--green)';
+  const cMO=v=>v<1.5?'var(--red)':v<3?'var(--yellow)':'var(--green)';
+  const cP =v=>v<10?'var(--red)':v<20?'var(--yellow)':v>80?'var(--red)':'var(--green)';
+  const cAl=v=>v>2?'var(--red)':v>1?'var(--yellow)':'var(--green)';
+  const cK =v=>v<0.2?'var(--red)':v<0.4?'var(--yellow)':'var(--green)';
+  const cCE=v=>v>4?'var(--red)':v>2?'var(--yellow)':'var(--green)';
+  const fv=(v,dec=2)=>v!=null?Number(v).toFixed(dec):'—';
 
-  const fv = (v,dec=2)=> v!=null?Number(v).toFixed(dec):'—';
-
-  // ── COLUMNA IZQUIERDA: métricas + triángulo ──
-  const metricsHtml = `
-    <div class="frp-section-title">Promedios de la Selección</div>
+  // ── COLUMNA IZQUIERDA ──────────────────────────────────────────
+  const metricsHtml=`
+    <div class="frp-section-lbl">Promedios de la Selección</div>
     <div class="frp-metrics">
-      <div class="frp-metric ph"><div class="frp-metric-val" style="color:${colorPH(avg.pH)}">${fv(avg.pH,1)}</div><div class="frp-metric-lbl">pH</div></div>
-      <div class="frp-metric mo"><div class="frp-metric-val" style="color:${colorMO(avg.MO_pct)}">${fv(avg.MO_pct,1)}%</div><div class="frp-metric-lbl">M.O.</div></div>
-      <div class="frp-metric p"><div class="frp-metric-val" style="color:${colorP(avg.P_disponible_ppm)}">${fv(avg.P_disponible_ppm,0)}</div><div class="frp-metric-lbl">P ppm</div></div>
-      <div class="frp-metric al"><div class="frp-metric-val" style="color:${colorAl(avg.Al_meq_100g)}">${fv(avg.Al_meq_100g,2)}</div><div class="frp-metric-lbl">Al meq</div></div>
-      <div class="frp-metric k"><div class="frp-metric-val" style="color:${colorK(avg.K_meq_100g)}">${fv(avg.K_meq_100g,2)}</div><div class="frp-metric-lbl">K meq</div></div>
-      <div class="frp-metric ce"><div class="frp-metric-val" style="color:${colorCE(avg.CE_dS_m)}">${fv(avg.CE_dS_m,2)}</div><div class="frp-metric-lbl">CE dS/m</div></div>
+      <div class="frp-metric"><div class="frp-metric-val" style="color:${col(avg.pH,cPH)}">${fv(avg.pH,1)}</div><div class="frp-metric-lbl">pH</div></div>
+      <div class="frp-metric"><div class="frp-metric-val" style="color:${col(avg.MO_pct,cMO)}">${fv(avg.MO_pct,1)}%</div><div class="frp-metric-lbl">M.O.</div></div>
+      <div class="frp-metric"><div class="frp-metric-val" style="color:${col(avg.P_disponible_ppm,cP)}">${fv(avg.P_disponible_ppm,0)}</div><div class="frp-metric-lbl">P ppm</div></div>
+      <div class="frp-metric"><div class="frp-metric-val" style="color:${col(avg.Al_meq_100g,cAl)}">${fv(avg.Al_meq_100g,2)}</div><div class="frp-metric-lbl">Al meq</div></div>
+      <div class="frp-metric"><div class="frp-metric-val" style="color:${col(avg.K_meq_100g,cK)}">${fv(avg.K_meq_100g,2)}</div><div class="frp-metric-lbl">K meq</div></div>
+      <div class="frp-metric"><div class="frp-metric-val" style="color:${col(avg.CE_dS_m,cCE)}">${fv(avg.CE_dS_m,2)}</div><div class="frp-metric-lbl">CE dS/m</div></div>
     </div>`;
 
-  // Triángulo textural con valores promedio
-  let triHtml = '';
-  if(arena!=null||limo!=null||arcilla!=null){
-    const info = tipoTextura ? getInfoTextura(tipoTextura) : null;
-    const tot  = (arena||0)+(limo||0)+(arcilla||0);
-    const aN = tot>0 ? ((arena||0)/tot*100).toFixed(1) : '—';
-    const lN = tot>0 ? ((limo||0)/tot*100).toFixed(1)  : '—';
-    const cN = tot>0 ? ((arcilla||0)/tot*100).toFixed(1): '—';
-
-    triHtml = `
-      <div class="frp-section-title" style="margin-top:14px">🪨 Triángulo Textural USDA — Promedio de la Selección</div>
-      <div class="frp-triangle-wrap">
-        <div class="triangle-svg-box"><svg id="frp-tri-svg" width="200" height="185"></svg></div>
-        <div class="frp-tri-info">
-          ${tipoTextura ? `
-            <div class="frp-tri-type">${tipoTextura}</div>
-            <div class="frp-tri-ideal">${info.ideal}</div>
-            <div class="frp-tri-desc">${info.desc}</div>
-            <div class="frp-tex-bar">
-              <div class="frp-tex-seg" style="width:${aN}%;background:rgba(210,153,34,0.85)">${parseFloat(aN)>8?aN+'%':''}</div>
-              <div class="frp-tex-seg" style="width:${lN}%;background:rgba(88,166,255,0.8)">${parseFloat(lN)>8?lN+'%':''}</div>
-              <div class="frp-tex-seg" style="width:${cN}%;background:rgba(248,81,73,0.8)">${parseFloat(cN)>8?cN+'%':''}</div>
-            </div>
-            <div class="frp-tex-legend">
-              <span><i class="frp-dot" style="background:rgba(210,153,34,0.85)"></i>Arena ${aN}%</span>
-              <span><i class="frp-dot" style="background:rgba(88,166,255,0.8)"></i>Limo ${lN}%</span>
-              <span><i class="frp-dot" style="background:rgba(248,81,73,0.8)"></i>Arcilla ${cN}%</span>
-            </div>
-            <div class="frp-tri-props" style="margin-top:8px">
-              ${[['Drenaje',info.drenaje],['Retención',info.retencion],['Labranza',info.labranza],['Fertilidad',info.fertilidad]].map(([k,v])=>`<div class="frp-tri-prop"><div class="frp-tri-prop-k">${k}</div><div class="frp-tri-prop-v">${v}</div></div>`).join('')}
-            </div>
-            ${info.adv?`<div class="frp-tri-adv">⚠ ${info.adv}</div>`:''}
-            <div style="margin-top:8px">
-              <div class="frp-tri-prop-k" style="margin-bottom:4px">Cultivos recomendados por textura</div>
-              <div class="frp-cultivos-recomendados">
-                ${info.cultivos.map(c=>`<span class="tag" style="color:var(--accent);border-color:rgba(57,211,83,.3)">${c}</span>`).join('')}
-              </div>
-            </div>`
-          : `<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">No hay datos de textura suficientes en la selección.</div>`}
+  // Triángulo textural
+  let triHtml='';
+  if(tipoTextura){
+    const info=getInfoTextura(tipoTextura);
+    const tot=(arena||0)+(limo||0)+(arcilla||0);
+    const aN=tot>0?((arena||0)/tot*100).toFixed(1):'—';
+    const lN=tot>0?((limo||0)/tot*100).toFixed(1):'—';
+    const cN=tot>0?((arcilla||0)/tot*100).toFixed(1):'—';
+    triHtml=`
+      <div class="frp-section-lbl" style="margin-top:14px">🪨 Triángulo Textural USDA</div>
+      <div style="display:flex;justify-content:center;margin:10px 0 14px">
+        <svg id="frp-tri-svg" width="200" height="185"></svg>
+      </div>
+      <div class="frp-tri-wrap">
+        <div class="frp-tri-type">${tipoTextura}</div>
+        <div class="frp-tri-ideal">${info.ideal}</div>
+        <div class="frp-tri-desc">${info.desc}</div>
+        <div class="frp-tex-bar">
+          <div class="frp-tex-seg" style="width:${aN}%;background:rgba(210,153,34,.85)">${parseFloat(aN)>10?aN+'%':''}</div>
+          <div class="frp-tex-seg" style="width:${lN}%;background:rgba(88,166,255,.8)">${parseFloat(lN)>10?lN+'%':''}</div>
+          <div class="frp-tex-seg" style="width:${cN}%;background:rgba(248,81,73,.8)">${parseFloat(cN)>10?cN+'%':''}</div>
         </div>
+        <div class="frp-tex-legend" style="margin-bottom:10px">
+          <span><i class="frp-dot" style="background:rgba(210,153,34,.85)"></i>Arena ${aN}%</span>
+          <span><i class="frp-dot" style="background:rgba(88,166,255,.8)"></i>Limo ${lN}%</span>
+          <span><i class="frp-dot" style="background:rgba(248,81,73,.8)"></i>Arcilla ${cN}%</span>
+        </div>
+        <div class="frp-tri-props">
+          ${[['Drenaje',info.drenaje],['Retención',info.retencion],['Labranza',info.labranza],['Fertilidad',info.fertilidad]].map(([k,v])=>`<div class="frp-tri-prop"><div class="frp-tri-prop-k">${k}</div><div class="frp-tri-prop-v">${v}</div></div>`).join('')}
+        </div>
+        ${info.adv?`<div class="frp-tri-adv">⚠ ${info.adv}</div>`:''}
       </div>`;
   }
 
-  // ── COLUMNA DERECHA: recomendaciones ──
-  const alerts = d.alertas||[];
-  const recs   = d.recomendaciones||[];
-  const alertsHtml = alerts.map(a=>`<li class="alert"><span class="ri">⚠</span>${a}</li>`).join('');
-  const recsHtml   = recs.map(r=>`<li class="rec"><span class="ri">✓</span>${r}</li>`).join('');
+  // ── NARRATIVA ESTILO CHAT ─────────────────────────────────────
+  const narrative=d.narrativa||'';
+  const paragraphData=parseNarrativeParagraphs(narrative);
 
-  // Nota sobre cultivo filtrado
-  const cultivoSeleccionado = document.getElementById('f-cultivo')?.value||'all';
-  const cultivoNota = cultivoSeleccionado!=='all'
-    ? `<div style="margin-bottom:10px;padding:7px 10px;background:rgba(0,213,163,.07);border-left:2px solid var(--accent2);border-radius:4px;font-size:11px;color:var(--text2)">
-        🌾 Recomendaciones específicas para <strong style="color:var(--accent2)">${cultivoSeleccionado}</strong> incluidas.
-       </div>` : '';
+  document.getElementById('frp-body').innerHTML=`
+    <div class="frp-col frp-col-left">
+      ${metricsHtml}
+      ${triHtml}
+    </div>
+    <div class="frp-chat-wrap" id="frp-chat-section">
+      <div class="frp-chat-header">
+        <div class="frp-chat-avatar">🌱</div>
+        <div>
+          <div class="frp-chat-name">AgroEco Asistente</div>
+          <span class="frp-chat-role">Análisis y recomendaciones agronómicas</span>
+        </div>
+      </div>
+      <div class="frp-chat-bubble" id="frp-chat-bubble">
+        <div class="frp-chat-typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      </div>
+    </div>`;
 
-  const colIzq = metricsHtml + triHtml;
-  const colDer = `
-    <div class="frp-section-title">Recomendaciones Agronómicas para la Selección</div>
-    ${cultivoNota}
-    <ul class="frp-recs-list">${alertsHtml}${recsHtml||'<li class="rec"><span class="ri">✓</span>Sin observaciones críticas en la selección actual.</li>'}</ul>`;
+  // Renderizar triángulo SVG
+  if(tipoTextura) setTimeout(()=>buildTriangle(document.getElementById('frp-tri-svg'),arena,limo,arcilla),60);
 
-  document.getElementById('frp-body').innerHTML = `
-    <div class="frp-col">${colIzq}</div>
-    <div class="frp-col">${colDer}</div>`;
+  // Efecto de escritura progresiva párrafo a párrafo
+  setTimeout(()=>typewriteNarrative(paragraphData), 400);
+}
 
-  // Renderizar el triángulo SVG después de que el DOM esté en el panel
-  if(arena!=null||limo!=null||arcilla!=null){
-    setTimeout(()=>buildTriangle(document.getElementById('frp-tri-svg'), arena, limo, arcilla), 60);
+// Convierte el texto narrativo en párrafos enriquecidos con íconos y clases
+function parseNarrativeParagraphs(text){
+  const raw=text.split('\n\n').map(s=>s.trim()).filter(Boolean);
+  return raw.map(p=>{
+    // Detectar tipo de párrafo por palabras clave
+    const lower=p.toLowerCase();
+    let cls='info', icon='📋';
+    if(/próximos pasos|siguiente|acción/.test(lower))       {cls='tip';  icon='🗓️';}
+    else if(/urgente|crítico|tóxico|severo|riesgo/.test(lower)){cls='alert';icon='🚨';}
+    else if(/ácido|alcalin|encalado|pH/.test(lower))        {cls='warn'; icon='⚗️';}
+    else if(/materia orgánica|compost|biológic/.test(lower)){cls='ok';   icon='🌿';}
+    else if(/nutrición|fósforo|potasio|nitrógeno|calcio|magnesio/.test(lower)){cls='info';icon='🧪';}
+    else if(/textura|arcilla|arena|limo|franco|arenoso/.test(lower)){cls='info';icon='🪨';}
+    else if(/mango|aguacate|papa|maíz|cacao|caña|frijol|específic/.test(lower)){cls='tip'; icon='🌾';}
+    else if(/análisis.*revela|clasifican|condiciones/.test(lower)){cls='info';icon='📊';}
+
+    // Convertir markdown básico a HTML
+    const html=p
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\n/g,' ');
+    return {cls,icon,html};
+  });
+}
+
+// Efecto de escritura progresiva estilo chat
+function typewriteNarrative(paragraphs){
+  const bubble=document.getElementById('frp-chat-bubble');
+  if(!bubble) return;
+  if(!paragraphs||!paragraphs.length){
+    bubble.innerHTML='<p style="color:var(--text3);font-size:12px">Sin recomendaciones disponibles para esta selección.</p>';
+    return;
   }
+
+  // Etiqueta de clase → tag visual
+  const tagMap={
+    alert:{label:'⚠ Alerta prioritaria',cls:'alert'},
+    warn: {label:'⚗️ Ajuste de pH',      cls:'warn'},
+    ok:   {label:'🌿 Materia orgánica',  cls:'ok'},
+    tip:  {label:'🌾 Cultivo / Acción',  cls:'ok'},
+    info: {label:'🧪 Nutrición',          cls:'ok'},
+  };
+
+  bubble.innerHTML=''; // limpiar spinner
+  let pIdx=0;
+
+  function renderParagraph(p, container, onDone){
+    // Tag de categoría
+    const tm=tagMap[p.cls]||{label:'📋 Análisis',cls:'ok'};
+    const tag=document.createElement('span');
+    tag.className=`chat-tag ${tm.cls}`;
+    tag.textContent=tm.label;
+
+    // Wrapper del párrafo
+    const div=document.createElement('div');
+    div.className='chat-para';
+    div.appendChild(tag);
+
+    const textNode=document.createElement('span');
+    div.appendChild(textNode);
+    container.appendChild(div);
+
+    // Cursor parpadeante
+    const cursor=document.createElement('span');
+    cursor.className='frp-chat-cursor';
+    div.appendChild(cursor);
+
+    // Texto sin etiquetas HTML para el typewriter; luego se reemplaza con HTML real
+    const plainText=p.html.replace(/<[^>]+>/g,'');
+    const fullHtml=p.html;
+    let i=0;
+    const speed=18; // ms por carácter
+
+    function tick(){
+      if(i<=plainText.length){
+        textNode.textContent=plainText.slice(0,i);
+        i++;
+        setTimeout(tick, speed);
+      } else {
+        // Reemplazar con HTML enriquecido (bold, em)
+        textNode.innerHTML=fullHtml;
+        cursor.remove();
+        if(onDone) setTimeout(onDone, 120);
+      }
+    }
+    tick();
+  }
+
+  function nextParagraph(){
+    if(pIdx>=paragraphs.length) return;
+    renderParagraph(paragraphs[pIdx], bubble, ()=>{
+      pIdx++;
+      nextParagraph();
+    });
+  }
+
+  nextParagraph();
 }
 
 function fmtVal(v){ return v!=null?Number(v).toFixed(2):'<span style="color:var(--text3)">—</span>'; }
@@ -927,6 +1170,14 @@ function debounceFilter(){clearTimeout(filterTimer);filterTimer=setTimeout(apply
 function clearFilters(){
   ['f-search','f-ph-min','f-ph-max','f-mo-min','f-mo-max'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   ['f-cultivo','f-municipio','f-tipo-suelo','f-estado'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='all';});
+  // Restaurar opciones base
+  populateSelect('f-cultivo',   BASE_CULTIVOS,    'Todos los cultivos');
+  populateSelect('f-municipio', BASE_MUNICIPIOS,  'Todos los municipios');
+  populateSelect('f-tipo-suelo',BASE_TIPOS_SUELO, 'Todos los tipos');
+  ['dep-cultivo','dep-municipio','dep-tipo-suelo','dep-estado'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent='';
+  });
+  document.getElementById('filter-rec-panel').style.display='none';
   applyFilters();
 }
 
@@ -958,8 +1209,9 @@ async function openRecord(cod){
   const tipo   =r.tipo_suelo||clasificarTextura(arena,limo,arcilla)||'—';
 
   const recs=r.ai_recommendations||{};
-  const alertsHtml=(recs.alertas||[]).map(a=>`<li class="alert"><span class="ri">⚠</span>${a}</li>`).join('');
-  const recsHtml  =(recs.recomendaciones||[]).map(a=>`<li class="rec"><span class="ri">✓</span>${a}</li>`).join('');
+  const alerts=(recs.alertas||[]);
+  const alertsHtml=alerts.length;
+  const recsHtml=(recs.recomendaciones||[]).length;
 
   document.getElementById('modal-body').innerHTML=`
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -982,7 +1234,20 @@ async function openRecord(cod){
 
     <hr class="divider">
     <div class="modal-section-title">✦ Recomendaciones Agroecológicas</div>
-    ${alertsHtml||recsHtml?`<ul class="rec-list">${alertsHtml}${recsHtml}</ul>`:'<p style="color:var(--text3);font-size:12px">Sin recomendaciones disponibles.</p>'}
+    ${(alertsHtml||recsHtml)?`
+      <div style="display:flex;flex-direction:column;gap:12px">
+        ${alerts.length?`
+          <div style="padding:12px 16px;background:rgba(248,81,73,.07);border-left:3px solid var(--red);border-radius:6px">
+            <div style="font-size:10px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.8px;color:var(--red);margin-bottom:8px">⚠ Alertas prioritarias</div>
+            <p style="font-size:12px;color:var(--text);line-height:1.8">${(recs.alertas||[]).join(' ')}</p>
+          </div>`:''}
+        ${recs.recomendaciones?.length?`
+          <div style="padding:12px 16px;background:rgba(57,211,83,.05);border-left:3px solid var(--green);border-radius:6px">
+            <div style="font-size:10px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.8px;color:var(--green);margin-bottom:8px">✦ Recomendaciones agronómicas</div>
+            <p style="font-size:12px;color:var(--text2);line-height:1.8">${(recs.recomendaciones||[]).join(' ')}</p>
+          </div>`:''}
+      </div>`
+    :'<p style="color:var(--text3);font-size:12px">Sin recomendaciones disponibles.</p>'}
 
     ${r.OBSERVACIONES&&r.OBSERVACIONES.length>10?`
       <hr class="divider">
@@ -1070,10 +1335,35 @@ async function getLocalRecs(){
   };
   const res=await fetch('/api/recommend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(r=>r.json());
   const card=document.getElementById('pred-recs-card');
-  const list=document.getElementById('pred-rec-list');
-  const alerts=(res.alertas||[]).map(a=>`<li class="alert"><span class="ri">⚠</span>${a}</li>`).join('');
-  const recs=(res.recomendaciones||[]).map(r=>`<li class="rec"><span class="ri">✓</span>${r}</li>`).join('');
-  list.innerHTML=alerts+recs||'<li class="rec"><span class="ri">✓</span>Ingresa datos para obtener recomendaciones.</li>';
+  const container=document.getElementById('pred-rec-list');
+
+  const alerts=res.alertas||[];
+  const recs=res.recomendaciones||[];
+
+  if(!alerts.length && !recs.length){
+    container.innerHTML='<p style="color:var(--text3);font-size:12px">Ingresa datos para obtener recomendaciones.</p>';
+    card.style.display='block';
+    return;
+  }
+
+  // Construir bloque narrativo continuo
+  let html='';
+
+  if(alerts.length){
+    html+=`<div style="padding:12px 16px;background:rgba(248,81,73,.07);border-left:3px solid var(--red);border-radius:6px;margin-bottom:14px">`;
+    html+=`<div style="font-size:10px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.8px;color:var(--red);margin-bottom:8px">⚠ Alertas prioritarias</div>`;
+    html+=`<p style="font-size:12px;color:var(--text);line-height:1.8">${alerts.join(' ')}</p>`;
+    html+=`</div>`;
+  }
+
+  if(recs.length){
+    html+=`<div style="padding:12px 16px;background:rgba(57,211,83,.05);border-left:3px solid var(--green);border-radius:6px">`;
+    html+=`<div style="font-size:10px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.8px;color:var(--green);margin-bottom:8px">✦ Recomendaciones agronómicas</div>`;
+    html+=`<p style="font-size:12px;color:var(--text2);line-height:1.8">${recs.join(' ')}</p>`;
+    html+=`</div>`;
+  }
+
+  container.innerHTML=html;
   card.style.display='block';
 }
 

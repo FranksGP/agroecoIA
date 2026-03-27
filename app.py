@@ -483,17 +483,351 @@ def index():
 
 @app.route('/api/filters')
 def get_filters():
-    cultivos = sorted(df_global['cultivo'].dropna().unique().tolist())
-    municipios = sorted(df_global['municipio'].dropna().unique().tolist())
+    cultivos    = sorted(df_global['cultivo'].dropna().unique().tolist())
+    municipios  = sorted(df_global['municipio'].dropna().unique().tolist())
     tipos_suelo = sorted(df_global['tipo_suelo'].dropna().unique().tolist())
+    estados     = ['Óptimo', 'Medio', 'Crítico']
     return jsonify({
-        'cultivos': cultivos,
-        'municipios': municipios,
-        'tipos_suelo': tipos_suelo,
+        'cultivos': cultivos, 'municipios': municipios,
+        'tipos_suelo': tipos_suelo, 'estados': estados,
         'ph_range': [safe_float(df_global['pH'].min()), safe_float(df_global['pH'].max())],
         'mo_range': [safe_float(df_global['MO_pct'].min()), safe_float(df_global['MO_pct'].max())],
-        'estados': ['Óptimo', 'Medio', 'Crítico']
     })
+
+
+@app.route('/api/filters-dynamic')
+def get_filters_dynamic():
+    """
+    Devuelve únicamente las opciones válidas dado el estado actual de los filtros,
+    evitando combinaciones que no existen en el dataset.
+    """
+    dff = df_global.copy()
+
+    cultivo    = request.args.get('cultivo')
+    municipio  = request.args.get('municipio')
+    tipo_suelo = request.args.get('tipo_suelo')
+    estado     = request.args.get('estado')
+
+    if cultivo    and cultivo    != 'all': dff = dff[dff['cultivo']    == cultivo]
+    if municipio  and municipio  != 'all': dff = dff[dff['municipio']  == municipio]
+    if tipo_suelo and tipo_suelo != 'all': dff = dff[dff['tipo_suelo'] == tipo_suelo]
+    if estado     and estado     != 'all': dff = dff[dff['estado']     == estado]
+
+    def valid_opts(col):
+        return sorted(dff[col].dropna().unique().tolist()) if col in dff.columns else []
+
+    return jsonify({
+        'cultivos':    valid_opts('cultivo'),
+        'municipios':  valid_opts('municipio'),
+        'tipos_suelo': valid_opts('tipo_suelo'),
+        'estados':     valid_opts('estado'),
+        'total':       len(dff),
+    })
+
+
+def _build_narrative(avg_row, estado_counts, total, tipo_suelo, cultivo_ctx, municipio_ctx):
+    """
+    Convierte los datos promedio + alertas/recomendaciones en un texto narrativo
+    fluido y estructurado para el agrónomo.
+    """
+    ph  = avg_row.get('pH')
+    mo  = avg_row.get('MO_pct')
+    p   = avg_row.get('P_disponible_ppm')
+    al  = avg_row.get('Al_meq_100g')
+    ce  = avg_row.get('CE_dS_m')
+    ca  = avg_row.get('Ca_meq_100g')
+    mg  = avg_row.get('Mg_meq_100g')
+    k   = avg_row.get('K_meq_100g')
+    n   = avg_row.get('N_total_pct')
+    arena   = avg_row.get('arena_pct')
+    arcilla = avg_row.get('arcilla_pct')
+    limo    = avg_row.get('limo_pct')
+
+    op = estado_counts.get('Óptimo', 0)
+    me = estado_counts.get('Medio', 0)
+    cr = estado_counts.get('Crítico', 0)
+    pct_op = round(op / total * 100) if total else 0
+    pct_cr = round(cr / total * 100) if total else 0
+
+    ctx_parts = []
+    if cultivo_ctx:   ctx_parts.append(f"el cultivo de **{cultivo_ctx}**")
+    if municipio_ctx: ctx_parts.append(f"el municipio de **{municipio_ctx}**")
+    if tipo_suelo:    ctx_parts.append(f"suelos de tipo **{tipo_suelo}**")
+    ctx_str = " y ".join(ctx_parts) if ctx_parts else f"las **{total} muestras** seleccionadas"
+
+    paragraphs = []
+
+    # ── Párrafo 1: Contexto general ──────────────────────────────────
+    estado_desc = "condiciones predominantemente óptimas" if pct_op >= 60 \
+        else "condiciones críticas que requieren intervención urgente" if pct_cr >= 50 \
+        else "condiciones intermedias con oportunidades claras de mejora"
+    paragraphs.append(
+        f"El análisis de {total} muestra{'s' if total!=1 else ''} correspondiente{'s' if total!=1 else ''} a {ctx_str} "
+        f"revela {estado_desc}. De la selección, el {pct_op}% se clasifica como Óptimo, "
+        f"el {round(me/total*100) if total else 0}% como Medio y el {pct_cr}% como Crítico."
+    )
+
+    # ── Párrafo 2: pH y acidez ────────────────────────────────────────
+    if ph is not None:
+        if ph < 4.5:
+            ph_txt = (f"El pH promedio es muy ácido ({ph:.2f}), lo que representa una condición crítica. "
+                      f"A este nivel, el aluminio y el manganeso se vuelven tóxicos para las raíces. "
+                      f"Se recomienda aplicar cal agrícola o dolomita a razón de 2–4 t/ha de forma urgente "
+                      f"antes de cualquier siembra.")
+        elif ph < 5.5:
+            ph_txt = (f"El pH promedio de {ph:.2f} indica acidez moderada. "
+                      f"Aunque algunos cultivos toleran este rango, el encalado con cal dolomítica (1–2 t/ha) "
+                      f"mejorará significativamente la disponibilidad de nutrientes y reducirá la saturación de aluminio.")
+        elif ph <= 7.0:
+            ph_txt = (f"El pH promedio de {ph:.2f} se encuentra en el rango óptimo (5.5–7.0), "
+                      f"lo que garantiza buena disponibilidad de macro y micronutrientes. "
+                      f"Se recomienda monitorear cada 6 meses para mantener esta condición.")
+        elif ph <= 7.5:
+            ph_txt = (f"El pH promedio de {ph:.2f} es ligeramente alcalino. "
+                      f"A este nivel puede comenzar a limitarse la absorción de hierro y zinc. "
+                      f"La incorporación de materia orgánica y azufre elemental ayudará a estabilizarlo.")
+        else:
+            ph_txt = (f"El pH promedio de {ph:.2f} es elevado, lo que restringe seriamente la absorción "
+                      f"de hierro, manganeso, zinc y boro. Se sugiere aplicar azufre elemental (200–400 kg/ha) "
+                      f"y ácido húmico para corregir progresivamente la alcalinidad.")
+        paragraphs.append(ph_txt)
+
+    # ── Párrafo 3: Materia orgánica y N ──────────────────────────────
+    mo_n_parts = []
+    if mo is not None:
+        if mo < 1.5:
+            mo_n_parts.append(f"La materia orgánica promedio es crítica ({mo:.1f}%), lo que compromete la estructura del suelo, "
+                               f"la actividad microbiana y la capacidad de retención de agua. "
+                               f"Es urgente incorporar compost maduro (10–15 t/ha) o vermicompost, "
+                               f"y establecer coberturas vegetales permanentes.")
+        elif mo < 3.0:
+            mo_n_parts.append(f"La materia orgánica promedio es baja ({mo:.1f}%), indicando un suelo con capacidad biótica reducida. "
+                               f"Se recomienda aplicar compost (5–8 t/ha/año) y evitar la quema de residuos de cosecha.")
+        elif mo < 5.0:
+            mo_n_parts.append(f"La materia orgánica promedio ({mo:.1f}%) es aceptable. "
+                               f"Mantenerla con aportes anuales de compost y residuos de cosecha es clave para sostener la fertilidad.")
+        else:
+            mo_n_parts.append(f"La materia orgánica promedio es excelente ({mo:.1f}%), reflejando un suelo biológicamente activo "
+                               f"y con buena estructura. Continuar las prácticas actuales y considerar biofertilizantes.")
+    if n is not None:
+        if n < 0.1:
+            mo_n_parts.append(f"El nitrógeno total es muy bajo ({n:.2f}%), lo que limita el crecimiento vegetativo. "
+                               f"Se recomienda fertilización nitrogenada fraccionada y la inoculación con bacterias fijadoras como Azospirillum o Rhizobium.")
+        elif n < 0.2:
+            mo_n_parts.append(f"El nitrógeno total moderado ({n:.2f}%) sugiere fertilización fraccionada de 80–120 kg N/ha "
+                               f"para evitar pérdidas por lixiviación.")
+    if mo_n_parts:
+        paragraphs.append(" ".join(mo_n_parts))
+
+    # ── Párrafo 4: Fósforo, Potasio, Calcio, Magnesio ────────────────
+    nutrientes = []
+    if p is not None:
+        if p < 10:
+            nutrientes.append(f"el fósforo es deficiente ({p:.0f} ppm) y requiere aplicación de roca fosfórica o DAP")
+        elif p < 20:
+            nutrientes.append(f"el fósforo está bajo ({p:.0f} ppm) —se recomienda superfosfato triple combinado con micorrizas—")
+        elif p > 80:
+            nutrientes.append(f"existe exceso de fósforo ({p:.0f} ppm) que puede bloquear zinc y cobre; suspender aplicaciones fosfóricas")
+    if k is not None:
+        if k < 0.2:
+            nutrientes.append(f"el potasio es crítico ({k:.2f} meq/100g) y debe corregirse con KCl o K₂SO₄ (100–150 kg/ha)")
+        elif k < 0.4:
+            nutrientes.append(f"el potasio es bajo ({k:.2f} meq/100g), aplicar 60–100 kg/ha de KCl fraccionado")
+    if ca is not None and mg is not None and mg > 0:
+        ratio = ca / mg
+        if ratio > 8:
+            nutrientes.append(f"la relación Ca:Mg ({ratio:.1f}) indica deficiencia inducida de magnesio; aplicar sulfato de magnesio")
+        elif ratio < 2:
+            nutrientes.append(f"la relación Ca:Mg ({ratio:.1f}) es baja; aplicar yeso agrícola para corregir el balance")
+    if nutrientes:
+        paragraphs.append(
+            "En cuanto a la nutrición mineral, " + "; ".join(nutrientes) + ". "
+            "Un plan de fertilización balanceado que integre fuentes minerales y orgánicas optimizará la respuesta del cultivo."
+        )
+
+    # ── Párrafo 5: Aluminio y salinidad ──────────────────────────────
+    riesgos = []
+    if al is not None:
+        if al > 2.0:
+            riesgos.append(f"toxicidad severa por aluminio ({al:.2f} meq/100g) que inhibe gravemente el crecimiento radicular; "
+                           f"se requiere encalado urgente con 3–5 t/ha de cal agrícola")
+        elif al > 1.0:
+            riesgos.append(f"aluminio elevado ({al:.2f} meq/100g) que afecta la absorción de fósforo y calcio; "
+                           f"aplicar cal dolomítica para precipitar el Al³⁺")
+        elif al > 0.5:
+            riesgos.append(f"aluminio moderado ({al:.2f} meq/100g); monitorear y considerar encalado preventivo")
+    if ce is not None:
+        if ce > 4.0:
+            riesgos.append(f"salinidad alta (CE = {ce:.2f} dS/m) que puede causar estrés hídrico severo; "
+                           f"realizar riegos de lavado y suspender fertilizantes salinos")
+        elif ce > 2.0:
+            riesgos.append(f"salinidad moderada (CE = {ce:.2f} dS/m); usar fertilizantes de baja salinidad y mejorar el drenaje")
+    if riesgos:
+        paragraphs.append(
+            "Se identifican los siguientes riesgos que deben atenderse con prioridad: " +
+            "; ".join(riesgos) + "."
+        )
+
+    # ── Párrafo 6: Textura y estructura ──────────────────────────────
+    if tipo_suelo or (arena is not None and arcilla is not None):
+        ts = tipo_suelo or clasificar_textura(arena, limo, arcilla)
+        if ts:
+            textura_consejos = {
+                'Arenoso':    "presenta baja retención de agua y nutrientes; es fundamental aumentar la materia orgánica y fraccionar riegos y fertilizaciones en dosis pequeñas y frecuentes.",
+                'Arena Franca': "tiene baja retención; fertilizar en dosis pequeñas y frecuentes, y usar mulching para conservar humedad.",
+                'Franco Arenoso': "es liviano con buena aireación pero baja retención hídrica; fraccionar riegos y fertilizaciones.",
+                'Franco':     "presenta condiciones texturales ideales: buen equilibrio entre aireación, retención de agua y labranza.",
+                'Franco Arcilloso': "es el más común en la región andina colombiana; evitar labranza cuando el suelo está húmedo para prevenir compactación.",
+                'Franco Limoso': "tiene alta retención de agua y nutrientes, pero es propenso al encharcamiento; asegurar buen drenaje.",
+                'Franco Arcillo Limoso': "presenta alto riesgo de asfixia radicular; se recomienda instalar drenajes subterráneos.",
+                'Franco Arcillo Arenoso': "posee características intermedias; manejar la fertilización con base en análisis periódicos.",
+                'Arcilloso':  "requiere manejo especializado; muy susceptible al encharcamiento y la compactación; enmiendas con MO y posibles drenajes son esenciales.",
+                'Arcillo Arenoso': "es pesado; evitar maquinaria pesada y realizar subsolado periódico.",
+                'Arcillo Limoso': "es muy plástico y difícil de manejar en cualquier nivel de humedad; requiere mejoramiento estructural con arena y MO.",
+                'Limoso':     "tiene buena fertilidad natural pero es propenso a la costra superficial; usar mulching para proteger la estructura.",
+            }
+            consejo = textura_consejos.get(ts, "requiere manejo técnico adaptado a sus características.")
+            comp_txt = ""
+            if arena is not None and limo is not None and arcilla is not None:
+                tot = (arena or 0) + (limo or 0) + (arcilla or 0)
+                if tot > 0:
+                    comp_txt = (f" La composición textural promedio es: {arena/tot*100:.0f}% arena, "
+                                f"{limo/tot*100:.0f}% limo y {arcilla/tot*100:.0f}% arcilla.")
+            paragraphs.append(
+                f"El suelo predominante en la selección es de tipo **{ts}**, que {consejo}{comp_txt}"
+            )
+
+    # ── Párrafo 7: Cultivo específico ────────────────────────────────
+    cultivo_recs_narrativa = {
+        'mango':    "El mango tolera suelos pobres pero responde muy bien a aplicaciones de potasio y boro en floración. Evite el exceso de nitrógeno, ya que favorece el crecimiento vegetativo a expensas de la fructificación.",
+        'aguacate': "El aguacate es muy sensible al exceso de sales (mantener CE < 1 dS/m) y al encharcamiento. El drenaje profundo es crítico. Para la variedad Hass, el pH debe mantenerse entre 6.0 y 7.0.",
+        'papa':     "La papa requiere pH entre 5.0 y 6.0 y tiene alta demanda de potasio y fósforo en la fase de tuberización. Controle nemátodos mediante rotación de cultivos.",
+        'maíz':     "El maíz requiere nitrógeno suficiente en la etapa V6 (60–80 kg N/ha). El zinc es frecuentemente deficiente en suelos ácidos y debe monitorearse.",
+        'cacao':    "El cacao requiere pH entre 6.0 y 7.5 con alta demanda de potasio, magnesio y boro. El sombrío regulado (30–40%) mejora la calidad del grano y la salud del suelo.",
+        'caña panelera': "La caña panelera demanda potasio intensivamente (150–200 kg K₂O/ha). El silicio mejora la resistencia a enfermedades y plagas.",
+        'frijol':   "Inocule con Rhizobium para aprovechar la fijación biológica de nitrógeno y reducir la fertilización nitrogenada hasta en un 50%. El pH ideal es 6.0–7.0.",
+        'tomate':   "En la fase de fructificación el tomate requiere alta relación K:N (1.5:1). Verifique el calcio foliar para prevenir la pudrición apical (blossom-end rot).",
+        'platano':  "El plátano demanda potasio intensivamente (200–250 kg K₂O/ha). Monitoree el magnesio para prevenir el amarillamiento de hojas.",
+        'fresas':   "Las fresas son muy sensibles a la salinidad (CE < 1 dS/m) y al sodio. La fertirrigación de precisión es la estrategia más recomendada.",
+        'pastos':   "Los pastos requieren fertilización nitrogenada fraccionada. El azufre y el magnesio son importantes para la calidad nutritiva del forraje.",
+        'hortalizas': "Las hortalizas demandan alta disponibilidad de nitrógeno y calcio. La rotación de cultivos es fundamental para el control de enfermedades del suelo.",
+        'piña':     "La piña tolera suelos ácidos (pH 4.5–6.0). Aplique hierro quelado si aparece clorosis intervenal. El potasio elevado mejora la calidad del fruto.",
+        'arandano': "El arándano requiere pH muy ácido (4.5–5.5). Use fertilizantes acidificantes como sulfato de amonio y evite el exceso de calcio.",
+    }
+    cultivo_key = str(cultivo_ctx or '').lower()
+    for key, nar in cultivo_recs_narrativa.items():
+        if key in cultivo_key:
+            paragraphs.append(f"**Consideraciones específicas para {cultivo_ctx}:** {nar}")
+            break
+
+    # ── Párrafo 8: Cierre y próximos pasos ───────────────────────────
+    pasos = [
+        "realizar un nuevo análisis de suelos en 6 meses para evaluar la respuesta a las enmiendas aplicadas",
+        "documentar cada intervención (dosis, fechas, productos) para construir un historial de manejo",
+    ]
+    if al and al > 1.0:
+        pasos.insert(0, "priorizar el encalado antes de la próxima siembra dado el riesgo de toxicidad por aluminio")
+    if mo and mo < 2.0:
+        pasos.insert(0, "iniciar inmediatamente la incorporación de materia orgánica como acción de mayor impacto")
+    paragraphs.append(
+        "**Próximos pasos recomendados:** " +
+        "; ".join(pasos) + ". "
+        "Un enfoque integrado que combine enmiendas químicas, insumos orgánicos y prácticas de conservación del suelo "
+        "es la estrategia más eficaz para mejorar la productividad de forma sostenible."
+    )
+
+    return "\n\n".join(paragraphs)
+
+
+@app.route('/api/filter-recommendation')
+def filter_recommendation():
+    """
+    Calcula promedios, clasificación dominante y devuelve una recomendación
+    en formato narrativo fluido para el agrónomo.
+    """
+    dff = df_global.copy()
+
+    cultivo    = request.args.get('cultivo')
+    municipio  = request.args.get('municipio')
+    tipo_suelo = request.args.get('tipo_suelo')
+    estado     = request.args.get('estado')
+    ph_min     = request.args.get('ph_min', type=float)
+    ph_max     = request.args.get('ph_max', type=float)
+    mo_min     = request.args.get('mo_min', type=float)
+    mo_max     = request.args.get('mo_max', type=float)
+
+    if cultivo    and cultivo    != 'all': dff = dff[dff['cultivo']    == cultivo]
+    if municipio  and municipio  != 'all': dff = dff[dff['municipio']  == municipio]
+    if tipo_suelo and tipo_suelo != 'all': dff = dff[dff['tipo_suelo'] == tipo_suelo]
+    if estado     and estado     != 'all': dff = dff[dff['estado']     == estado]
+    if ph_min is not None: dff = dff[dff['pH'] >= ph_min]
+    if ph_max is not None: dff = dff[dff['pH'] <= ph_max]
+    if mo_min is not None: dff = dff[dff['MO_pct'] >= mo_min]
+    if mo_max is not None: dff = dff[dff['MO_pct'] <= mo_max]
+
+    if dff.empty:
+        return jsonify({'error': 'No hay muestras con esos filtros.'}), 400
+
+    num_cols = [
+        'pH','MO_pct','P_disponible_ppm','Ca_meq_100g','Mg_meq_100g','K_meq_100g',
+        'Al_meq_100g','CE_dS_m','N_total_pct','C_organico_pct','Fe_ppm','Zn_ppm',
+        'Mn_ppm','B_ppm','Na_meq_100g','densidad_aparente',
+        'arena_pct','limo_pct','arcilla_pct','acidez_interc_meq','S_ppm','Cu_ppm',
+    ]
+    promedios = {}
+    for c in num_cols:
+        if c in dff.columns:
+            v = dff[c].dropna().mean()
+            promedios[c] = safe_float(v)
+
+    tipo_suelo_pred = None
+    if 'tipo_suelo' in dff.columns:
+        moda_ts = dff['tipo_suelo'].dropna().mode()
+        if len(moda_ts) > 0:
+            tipo_suelo_pred = moda_ts[0]
+    if tipo_suelo_pred is None:
+        tipo_suelo_pred = clasificar_textura(
+            promedios.get('arena_pct'), promedios.get('limo_pct'), promedios.get('arcilla_pct')
+        )
+
+    cultivo_moda = None
+    if 'cultivo' in dff.columns:
+        moda_c = dff['cultivo'].dropna().mode()
+        cultivo_moda = moda_c[0] if len(moda_c) > 0 else None
+    cultivo_para_recs = (cultivo if cultivo and cultivo != 'all' else cultivo_moda) or ''
+
+    estado_counts = dff['estado'].value_counts().to_dict()
+    total = len(dff)
+
+    # Narrativa fluida
+    avg_row = dict(promedios)
+    avg_row['cultivo'] = cultivo_para_recs
+    narrative = _build_narrative(
+        avg_row, estado_counts, total, tipo_suelo_pred,
+        cultivo_para_recs, municipio if municipio and municipio != 'all' else None
+    )
+
+    # También incluir listas para compatibilidad con el frontend
+    recs_obj = generate_local_recommendations(avg_row)
+
+    return jsonify({
+        'total':                   total,
+        'estado_counts':           estado_counts,
+        'promedios':               promedios,
+        'tipo_suelo_predominante': tipo_suelo_pred,
+        'cultivo_moda':            cultivo_moda,
+        'narrativa':               narrative,
+        'recomendaciones':         recs_obj['recomendaciones'],
+        'alertas':                 recs_obj['alertas'],
+        'filtros_activos': {
+            'cultivo':    cultivo    if cultivo    and cultivo    != 'all' else None,
+            'municipio':  municipio  if municipio  and municipio  != 'all' else None,
+            'tipo_suelo': tipo_suelo if tipo_suelo and tipo_suelo != 'all' else None,
+            'estado':     estado     if estado     and estado     != 'all' else None,
+        }
+    })
+
+
 
 @app.route('/api/data')
 def get_data():
@@ -641,100 +975,6 @@ def export():
     from flask import Response
     return Response(output.getvalue(), mimetype='text/csv',
                     headers={'Content-Disposition': 'attachment; filename=agroeco_export.csv'})
-@app.route('/api/filter-recommendation')
-def filter_recommendation():
-    """
-    Calcula promedios, clasificación dominante, tipo de suelo y genera
-    recomendaciones agronómicas para el subconjunto filtrado de muestras.
-    Incluye textura promedio para el triángulo USDA del frontend.
-    """
-    dff = df_global.copy()
-
-    # Aplicar los mismos filtros que /api/data
-    cultivo    = request.args.get('cultivo')
-    municipio  = request.args.get('municipio')
-    tipo_suelo = request.args.get('tipo_suelo')
-    estado     = request.args.get('estado')
-    ph_min     = request.args.get('ph_min', type=float)
-    ph_max     = request.args.get('ph_max', type=float)
-    mo_min     = request.args.get('mo_min', type=float)
-    mo_max     = request.args.get('mo_max', type=float)
-
-    if cultivo    and cultivo    != 'all': dff = dff[dff['cultivo']    == cultivo]
-    if municipio  and municipio  != 'all': dff = dff[dff['municipio']  == municipio]
-    if tipo_suelo and tipo_suelo != 'all': dff = dff[dff['tipo_suelo'] == tipo_suelo]
-    if estado     and estado     != 'all': dff = dff[dff['estado']     == estado]
-    if ph_min is not None: dff = dff[dff['pH'] >= ph_min]
-    if ph_max is not None: dff = dff[dff['pH'] <= ph_max]
-    if mo_min is not None: dff = dff[dff['MO_pct'] >= mo_min]
-    if mo_max is not None: dff = dff[dff['MO_pct'] <= mo_max]
-
-    if dff.empty:
-        return jsonify({'error': 'No hay muestras con esos filtros.'}), 400
-
-    # Columnas para promediar
-    num_cols = [
-        'pH', 'MO_pct', 'P_disponible_ppm', 'Ca_meq_100g', 'Mg_meq_100g',
-        'K_meq_100g', 'Al_meq_100g', 'CE_dS_m', 'N_total_pct', 'C_organico_pct',
-        'Fe_ppm', 'Zn_ppm', 'Mn_ppm', 'B_ppm', 'Na_meq_100g', 'densidad_aparente',
-        'arena_pct', 'limo_pct', 'arcilla_pct', 'acidez_interc_meq',
-        'CICE_meq_100g', 'S_ppm', 'Cu_ppm',
-    ]
-    promedios = {}
-    for c in num_cols:
-        if c in dff.columns:
-            v = dff[c].dropna().mean()
-            promedios[c] = safe_float(v)
-
-    # Tipo de suelo predominante (moda) — prioriza tipo_suelo existente,
-    # si no lo hay calcula desde textura promedio
-    tipo_suelo_pred = None
-    if 'tipo_suelo' in dff.columns:
-        moda_ts = dff['tipo_suelo'].dropna().mode()
-        if len(moda_ts) > 0:
-            tipo_suelo_pred = moda_ts[0]
-    if tipo_suelo_pred is None:
-        tipo_suelo_pred = clasificar_textura(
-            promedios.get('arena_pct'),
-            promedios.get('limo_pct'),
-            promedios.get('arcilla_pct')
-        )
-
-    # Cultivo más frecuente en la selección
-    cultivo_moda = None
-    if 'cultivo' in dff.columns:
-        moda_c = dff['cultivo'].dropna().mode()
-        cultivo_moda = moda_c[0] if len(moda_c) > 0 else None
-    # Si el usuario filtró por cultivo, ese tiene precedencia
-    cultivo_para_recs = (cultivo if cultivo and cultivo != 'all' else cultivo_moda) or ''
-
-    # Construir fila promedio para recomendaciones
-    avg_row = dict(promedios)
-    avg_row['cultivo'] = cultivo_para_recs
-
-    # Estado dominante
-    estado_counts = dff['estado'].value_counts().to_dict()
-
-    # Generar recomendaciones basadas en el promedio de la selección
-    recs = generate_local_recommendations(avg_row)
-
-    return jsonify({
-        'total':                   len(dff),
-        'estado_counts':           estado_counts,
-        'promedios':               promedios,
-        'tipo_suelo_predominante': tipo_suelo_pred,
-        'cultivo_moda':            cultivo_moda,
-        'recomendaciones':         recs['recomendaciones'],
-        'alertas':                 recs['alertas'],
-        'filtros_activos': {
-            'cultivo':    cultivo    if cultivo    and cultivo    != 'all' else None,
-            'municipio':  municipio  if municipio  and municipio  != 'all' else None,
-            'tipo_suelo': tipo_suelo if tipo_suelo and tipo_suelo != 'all' else None,
-            'estado':     estado     if estado     and estado     != 'all' else None,
-        }
-    })
-
-
 if __name__ == '__main__':
     print("🌱 AgroEco Lab iniciando en http://localhost:5000")
     print(f"   Dataset: {len(df_global)} muestras cargadas")
