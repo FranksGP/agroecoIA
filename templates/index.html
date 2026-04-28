@@ -21,19 +21,40 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;overflow-x:hidden}
+.theme-dark{
+  --bg:#0f1713;--bg2:#151f1a;--bg3:#1c2922;
+  --border:#2b4034;--border2:#2a3a31;
+  --text:#e7f2eb;--text2:#a6c0b1;--text3:#6f8a7b;
+  --green:#4fc86f;--green-dim:rgba(79,200,111,.2);
+  --yellow:#ddb14f;--yellow-dim:rgba(221,177,79,.2);
+  --red:#e06b5d;--red-dim:rgba(224,107,93,.2);
+  --blue:#69b2e8;--purple:#b596f2;
+  --accent:#39d353;--accent2:#00d5a3;
+}
 .sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border2);display:flex;flex-direction:column;z-index:100}
+.sidebar.collapsed{width:74px}
 .sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border2)}
 .sidebar-logo h1{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px}
 .sidebar-logo span{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);display:block;margin-top:2px}
+.sidebar-logo-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.logo-mark{display:flex;align-items:center;gap:6px;min-width:0}
+.logo-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-toggle{margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px}
+.sidebar-toggle:hover{color:var(--text)}
 .sidebar-nav{flex:1;padding:12px 0}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .15s;border-left:2px solid transparent;user-select:none}
 .nav-item:hover{background:var(--bg3);color:var(--text)}
 .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(57,211,83,.05)}
+.nav-item.disabled{opacity:.45;pointer-events:none}
 .nav-icon{width:16px;text-align:center;font-size:14px}
+.nav-label{white-space:nowrap}
+.sidebar-upload{padding:12px 14px;border-bottom:1px solid var(--border2)}
 .sidebar-stats{padding:14px 18px;border-top:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
 .sidebar-stats .stat-val{color:var(--accent);font-size:14px;display:block;margin-top:2px}
 .main{margin-left:220px;min-height:100vh;display:flex;flex-direction:column}
+.main.shift-collapsed{margin-left:74px}
 .topbar{position:sticky;top:0;z-index:90;background:rgba(240,245,241,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);padding:12px 24px;display:flex;align-items:center;gap:12px}
+.theme-dark .topbar{background:rgba(15,23,19,.95)}
 .topbar-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .btn{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
@@ -42,6 +63,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .btn-primary{background:var(--accent);color:#fff;font-weight:600}
 .btn-primary:hover{background:#25a042}
 .btn-sm{padding:4px 10px;font-size:11px}
+.btn-theme{width:30px;height:30px;padding:0;border-radius:50%;justify-content:center}
 .content{flex:1;padding:24px}
 .view{display:none}.view.active{display:block}
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
@@ -250,12 +272,11 @@ table.data-table tr:last-child td{border-bottom:none}
 .pred-inputs .pred-input-group label{font-weight:500;letter-spacing:.2px}
 .predictor-grid>div:first-child{display:flex;flex-direction:column;gap:16px}
 
-/* ══ PANTALLA DE CARGA DE ARCHIVO ══════════════════════════════════ */
-#upload-screen{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;align-items:center;justify-content:center}
-.upload-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:48px 52px;max-width:520px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(30,80,40,.10)}
-.upload-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
-.upload-subtitle{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:32px}
 .drop-zone{border:2px dashed var(--border);border-radius:12px;padding:40px 24px;cursor:pointer;transition:all .2s;background:var(--bg3);position:relative}
+.sidebar-upload .drop-zone{padding:14px 10px}
+.sidebar-upload .drop-icon{font-size:24px;margin-bottom:6px}
+.sidebar-upload .drop-title{font-size:12px;margin-bottom:3px}
+.sidebar-upload .drop-desc{font-size:10px;line-height:1.45}
 .drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:rgba(42,181,74,.06)}
 .drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .drop-icon{font-size:40px;margin-bottom:12px}
@@ -268,42 +289,40 @@ table.data-table tr:last-child td{border-bottom:none}
 .upload-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:20px;width:0%;transition:width .3s}
 .upload-status{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace}
 .upload-error{margin-top:14px;padding:10px 14px;background:var(--red-dim);border-left:3px solid var(--red);border-radius:6px;font-size:12px;color:var(--red);display:none;text-align:left}
+.sidebar.collapsed .sidebar-upload,.sidebar.collapsed .sidebar-stats,.sidebar.collapsed .nav-label,.sidebar.collapsed .sidebar-logo p,.sidebar.collapsed .sidebar-logo span{display:none}
+.sidebar.collapsed .sidebar-logo{padding:14px 10px}
+.sidebar.collapsed .sidebar-logo h1{font-size:17px}
+.sidebar.collapsed .logo-name{display:none}
+.sidebar.collapsed .sidebar-logo-head{justify-content:center}
+.sidebar.collapsed .sidebar-toggle{margin-left:0}
+@media(max-width:900px){.sidebar{transform:none}.main{margin-left:220px}.sidebar.collapsed{width:64px}.main.shift-collapsed{margin-left:64px}}
 </style>
 </head>
 <body>
 
-<!-- ══ PANTALLA DE CARGA DE DATASET ══════════════════════════════ -->
-<div id="upload-screen">
-  <div class="upload-card">
-    <div class="upload-logo">🌱 AgroecologIA</div>
-    <div class="upload-subtitle">v2.0 · Sistema de Análisis de Suelos</div>
-
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-head"><h1 class="logo-mark"><span>🌱</span><span class="logo-name">AgroecologIA</span></h1><button class="sidebar-toggle" onclick="toggleSidebar()">☰</button></div>
+    <p style="font-size:11px;color:var(--text2);margin-top:4px;margin-bottom:2px;line-height:1.4">Orientaciones presuntivas en cultivos agroecológicos</p>
+    <span>v2.0 · Sistema de Análisis</span>
+  </div>
+  <div class="sidebar-upload">
     <div class="drop-zone" id="drop-zone">
       <input type="file" id="file-input" accept=".csv">
       <div class="drop-icon">📂</div>
       <div class="drop-title">Carga tu dataset</div>
-      <div class="drop-desc">Arrastra y suelta el archivo CSV aquí<br>o <span>haz clic para seleccionarlo</span></div>
+      <div class="drop-desc">Arrastra y suelta CSV<br>o <span>haz clic</span></div>
     </div>
-    <div class="upload-info">Formato esperado: CSV separado por punto y coma (;) · Codificación UTF-8</div>
-
     <div class="upload-progress" id="upload-progress">
       <div class="upload-progress-bar"><div class="upload-progress-fill" id="upload-fill"></div></div>
       <div class="upload-status" id="upload-status">Procesando...</div>
     </div>
     <div class="upload-error" id="upload-error"></div>
   </div>
-</div>
-
-<nav class="sidebar">
-  <div class="sidebar-logo">
-    <h1>🌱 AgroecologIA</h1>
-    <p style="font-size:11px;color:var(--text2);margin-top:4px;margin-bottom:2px;line-height:1.4">Orientaciones presuntivas en cultivos agroecológicos</p>
-    <span>v2.0 · Sistema de Análisis</span>
-  </div>
   <div class="sidebar-nav">
-    <div class="nav-item active" onclick="switchView('dashboard')" data-view="dashboard"><span class="nav-icon">⬡</span> Dashboard</div>
-    <div class="nav-item" onclick="switchView('data')" data-view="data"><span class="nav-icon">⊞</span> Datos</div>
-    <div class="nav-item" onclick="switchView('predictor')" data-view="predictor"><span class="nav-icon">◈</span> Predictor IA</div>
+    <div class="nav-item active disabled" onclick="switchView('dashboard')" data-view="dashboard"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></div>
+    <div class="nav-item disabled" onclick="switchView('data')" data-view="data"><span class="nav-icon">⊞</span><span class="nav-label">Datos</span></div>
+    <div class="nav-item" onclick="switchView('predictor')" data-view="predictor"><span class="nav-icon">◈</span><span class="nav-label">Predictor IA</span></div>
   </div>
   <div class="sidebar-stats">
     <div>TOTAL MUESTRAS</div><span class="stat-val" id="sidebar-total">—</span>
@@ -311,10 +330,10 @@ table.data-table tr:last-child td{border-bottom:none}
   </div>
 </nav>
 
-<main class="main">
+<main class="main" id="main-layout">
   <div class="topbar">
     <span class="topbar-title" id="topbar-title">Dashboard General</span>
-    <div class="topbar-right"><button class="btn btn-ghost btn-sm" onclick="exportData()">⬇ Exportar CSV</button></div>
+    <div class="topbar-right"><button class="btn btn-ghost btn-sm btn-theme" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">◐</button></div>
   </div>
 
   <div class="content">
@@ -724,10 +743,11 @@ window.addEventListener('load', ()=>{ buildTriangle(document.getElementById('pre
 // ═══════════════════════════════════════════════
 // NAVEGACIÓN
 // ═══════════════════════════════════════════════
-let currentView='dashboard', currentPage=1, totalPages=1, filterTimer=null;
+let currentView='dashboard', currentPage=1, totalPages=1, filterTimer=null, hasValidUpload=false, sidebarCollapsed=false;
 const charts={};
 
 function switchView(view){
+  if((view==='dashboard'||view==='data')&&!hasValidUpload) return;
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('view-'+view).classList.add('active');
@@ -741,6 +761,33 @@ function showToast(msg,type='success'){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className=`toast ${type} show`;
   setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function setSectionsEnabled(enabled){
+  hasValidUpload=enabled;
+  ['dashboard','data'].forEach(view=>{
+    const item=document.querySelector(`.nav-item[data-view="${view}"]`);
+    if(item) item.classList.toggle('disabled',!enabled);
+  });
+}
+
+function toggleSidebar(){
+  sidebarCollapsed=!sidebarCollapsed;
+  document.getElementById('sidebar').classList.toggle('collapsed',sidebarCollapsed);
+  document.getElementById('main-layout').classList.toggle('shift-collapsed',sidebarCollapsed);
+}
+
+function applyTheme(theme){
+  document.body.classList.toggle('theme-dark',theme==='dark');
+  localStorage.setItem('theme',theme);
+  const toggleBtn=document.getElementById('theme-toggle');
+  if(toggleBtn) toggleBtn.textContent=theme==='dark'?'☀':'◐';
+  if(charts['textura']) loadDashboard();
+}
+
+function toggleTheme(){
+  const next=document.body.classList.contains('theme-dark')?'light':'dark';
+  applyTheme(next);
 }
 
 // ═══════════════════════════════════════════════
@@ -770,11 +817,12 @@ async function loadDashboard(){
 function destroyChart(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
 
 function buildCharts(data){
-  Chart.defaults.color='#8b949e';
+  const dark=document.body.classList.contains('theme-dark');
+  Chart.defaults.color=dark?'#a6c0b1':'#5f7a6b';
   Chart.defaults.font.family="'DM Mono',monospace";
   Chart.defaults.font.size=11;
-  const grid={color:'rgba(255,255,255,0.05)',drawBorder:false};
-  const tick={color:'#484f58',font:{family:"'DM Mono',monospace",size:10}};
+  const grid={color:dark?'rgba(166,192,177,0.12)':'rgba(40,60,45,0.1)',drawBorder:false};
+  const tick={color:dark?'#a6c0b1':'#4b6858',font:{family:"'DM Mono',monospace",size:10}};
 
   destroyChart('ph');
   charts['ph']=new Chart(document.getElementById('chart-ph'),{type:'bar',data:{labels:Object.keys(data.ph_dist),datasets:[{data:Object.values(data.ph_dist),backgroundColor:'rgba(88,166,255,0.7)',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid,ticks:tick},y:{grid,ticks:tick}}}});
@@ -793,7 +841,8 @@ function buildCharts(data){
   charts['trend']=new Chart(document.getElementById('chart-trend'),{type:'line',data:{labels:tk,datasets:[{data:tk.map(k=>data.year_trend[k]),borderColor:'#3fb950',backgroundColor:'rgba(63,185,80,0.1)',tension:0.3,fill:true,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid,ticks:tick},y:{grid,ticks:tick}}}});
 
   destroyChart('textura');
-  charts['textura']=new Chart(document.getElementById('chart-textura'),{type:'pie',data:{labels:Object.keys(data.textura),datasets:[{data:Object.values(data.textura),backgroundColor:['#58a6ff','#3fb950','#d29922','#f85149','#bc8cff','#39d353','#00d5a3','#ff7b54'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:8,boxWidth:10,font:{size:9}}}}}});
+  const texturaColors=dark?['#7cc0f2','#67d47d','#e7c36f','#f28b82','#c8a7ff','#43e28f','#37e2bf','#ff9f70']:['#2f7ec7','#2e9443','#b7891a','#d14c40','#8a66d9','#1f9f57','#0b9f82','#d97342'];
+  charts['textura']=new Chart(document.getElementById('chart-textura'),{type:'pie',data:{labels:Object.keys(data.textura),datasets:[{data:Object.values(data.textura),backgroundColor:texturaColors,borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:8,boxWidth:10,font:{size:9}}}}}});
 
   destroyChart('mun');
   charts['mun']=new Chart(document.getElementById('chart-mun'),{type:'bar',data:{labels:Object.keys(data.municipio_counts),datasets:[{data:Object.values(data.municipio_counts),backgroundColor:'rgba(248,81,73,0.65)',borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid,ticks:tick},y:{grid:{display:false},ticks:{...tick,font:{size:10}}}}}});
@@ -1408,13 +1457,9 @@ async function getLocalRecs(){
   card.style.display='block';
 }
 
-function exportData(){
-  const params=new URLSearchParams({cultivo:document.getElementById('f-cultivo')?.value||'all',municipio:document.getElementById('f-municipio')?.value||'all',estado:document.getElementById('f-estado')?.value||'all'});
-  window.location.href='/api/export?'+params;
-  showToast('Exportando CSV...','success');
-}
-
 (async function init(){
+  applyTheme(localStorage.getItem('theme')==='dark'?'dark':'light');
+  setSectionsEnabled(false);
   // ── Drag & Drop / File Input upload ─────────────────────────────
   const dropZone   = document.getElementById('drop-zone');
   const fileInput  = document.getElementById('file-input');
@@ -1447,7 +1492,7 @@ function exportData(){
       fillBar.style.width='100%';
       statusEl.textContent=`✓ ${data.records} muestras cargadas. Iniciando...`;
       setTimeout(()=>{
-        document.getElementById('upload-screen').style.display='none';
+        setSectionsEnabled(true);
         Promise.all([loadDashboard(),loadFilters()]);
       },700);
     }catch(e){
