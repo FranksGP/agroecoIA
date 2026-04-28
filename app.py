@@ -11,6 +11,7 @@ import requests
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, jsonify, request
+from werkzeug.utils import secure_filename
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
@@ -52,7 +53,7 @@ def load_data():
     )
     return df
 
-df_global = load_data()
+df_global = pd.DataFrame()  # Se carga mediante /api/upload
 
 # ── Clasificación de estado ─────────────────────────────────────────────────
 def classify_estado(row):
@@ -119,7 +120,9 @@ def classify_estado(row):
     else:
         return 'Crítico'
 
-df_global['estado'] = df_global.apply(classify_estado, axis=1)
+def apply_estado(df):
+    df['estado'] = df.apply(classify_estado, axis=1)
+    return df
 
 def clasificar_textura(arena, limo, arcilla):
     """Clasifica el tipo de suelo según el triángulo textural USDA."""
@@ -177,12 +180,15 @@ def train_model(df):
     return clf, le, acc
 
 clf_model, label_enc, model_acc = None, None, 0.0
-try:
-    result = train_model(df_global)
-    if result and len(result) == 3:
-        clf_model, label_enc, model_acc = result
-except Exception as e:
-    print(f"ML training skipped: {e}")
+
+def retrain_model():
+    global clf_model, label_enc, model_acc
+    try:
+        result = train_model(df_global)
+        if result and len(result) == 3:
+            clf_model, label_enc, model_acc = result
+    except Exception as e:
+        print(f"ML training skipped: {e}")
 
 # ── Recomendaciones IA (local rule-based + Claude API opcional) ─────────────
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -828,6 +834,54 @@ def filter_recommendation():
     })
 
 
+
+@app.route('/api/upload', methods=['POST'])
+def upload_dataset():
+    global df_global, clf_model, label_enc, model_acc
+    if 'file' not in request.files:
+        return jsonify({'error': 'No se recibió ningún archivo.'}), 400
+    file = request.files['file']
+    if not file.filename.endswith('.csv'):
+        return jsonify({'error': 'El archivo debe ser un CSV.'}), 400
+    try:
+        import io
+        content = file.read()
+        # Try utf-8-sig first, fallback to latin-1
+        for enc in ('utf-8-sig', 'utf-8', 'latin-1'):
+            try:
+                df = pd.read_csv(io.BytesIO(content), sep=';', encoding=enc, low_memory=False)
+                break
+            except UnicodeDecodeError:
+                continue
+        # Reuse cleaning logic from load_data
+        df = df.drop(columns=[c for c in df.columns if c.startswith('Unnamed') or c == '859' or c == '23/11/2022'], errors='ignore')
+        num_cols = ['acidez_interc_meq','Al_meq_100g','S_ppm','B_ppm','Ca_meq_100g',
+                    'C_organico_pct','Cu_ppm','CE_dS_m','densidad_aparente','P_disponible_ppm',
+                    'Fe_ppm','humedad_higrosc_pct','Mg_meq_100g','Mn_ppm','MO_pct',
+                    'N_amoniacal','N_total_pct','K_meq_100g','Na_meq_100g','Zn_ppm','pH',
+                    'arena_pct','arcilla_pct','limo_pct','CICA_meq_100g','CICE_meq_100g']
+        for c in num_cols:
+            if c in df.columns:
+                df[c] = pd.to_numeric(df[c], errors='coerce')
+        for c in ['cultivo','municipio','departamento','tipo_suelo','TIPO_MUESTRA']:
+            if c in df.columns:
+                df[c] = df[c].astype(str).str.strip().str.title()
+                df[c] = df[c].replace({'Nan': None, 'None': None, '': None})
+        df['fecha_muestra'] = pd.to_datetime(df['fecha_muestra'], errors='coerce', dayfirst=True)
+        df['año'] = df['fecha_muestra'].dt.year
+        df['mes'] = df['fecha_muestra'].dt.month
+        if 'pH' not in df.columns:
+            return jsonify({'error': 'El CSV no contiene la columna "pH" requerida.'}), 400
+        df = df.dropna(subset=['pH']).reset_index(drop=True)
+        mask = df['tipo_suelo'].isna() if 'tipo_suelo' in df.columns else pd.Series([True]*len(df))
+        df.loc[mask, 'tipo_suelo'] = df[mask].apply(
+            lambda r: clasificar_textura(r.get('arena_pct'), r.get('limo_pct'), r.get('arcilla_pct')), axis=1
+        )
+        df_global = apply_estado(df)
+        retrain_model()
+        return jsonify({'records': len(df_global), 'model_accuracy': round(model_acc*100,1) if model_acc else None})
+    except Exception as e:
+        return jsonify({'error': f'Error procesando el archivo: {str(e)}'}), 500
 
 @app.route('/api/data')
 def get_data():

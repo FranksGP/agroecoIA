@@ -9,14 +9,14 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2333;
-  --border:#30363d;--border2:#21262d;
-  --text:#e6edf3;--text2:#8b949e;--text3:#484f58;
-  --green:#3fb950;--green-dim:#1a3a24;
-  --yellow:#d29922;--yellow-dim:#3d2e0a;
-  --red:#f85149;--red-dim:#3d1212;
-  --blue:#58a6ff;--purple:#bc8cff;
-  --accent:#39d353;--accent2:#00d5a3;
+  --bg:#f0f5f1;--bg2:#ffffff;--bg3:#e8f0eb;
+  --border:#c8dace;--border2:#d8e8dc;
+  --text:#1a2e1e;--text2:#4a6655;--text3:#8aaa95;
+  --green:#1e8c3a;--green-dim:#d4edda;
+  --yellow:#b07d10;--yellow-dim:#fdf3d0;
+  --red:#c0392b;--red-dim:#fce8e6;
+  --blue:#1a6fa3;--purple:#6d4c9f;
+  --accent:#2ab54a;--accent2:#00a884;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -33,14 +33,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .sidebar-stats{padding:14px 18px;border-top:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
 .sidebar-stats .stat-val{color:var(--accent);font-size:14px;display:block;margin-top:2px}
 .main{margin-left:220px;min-height:100vh;display:flex;flex-direction:column}
-.topbar{position:sticky;top:0;z-index:90;background:rgba(13,17,23,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);padding:12px 24px;display:flex;align-items:center;gap:12px}
+.topbar{position:sticky;top:0;z-index:90;background:rgba(240,245,241,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);padding:12px 24px;display:flex;align-items:center;gap:12px}
 .topbar-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .btn{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
 .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
 .btn-ghost:hover{background:var(--bg3);color:var(--text)}
-.btn-primary{background:var(--accent);color:#000;font-weight:600}
-.btn-primary:hover{background:#4dde60}
+.btn-primary{background:var(--accent);color:#fff;font-weight:600}
+.btn-primary:hover{background:#25a042}
 .btn-sm{padding:4px 10px;font-size:11px}
 .content{flex:1;padding:24px}
 .view{display:none}.view.active{display:block}
@@ -91,10 +91,10 @@ table.data-table tr:last-child td{border-bottom:none}
 .pagination{display:flex;align-items:center;gap:4px;justify-content:center;padding:16px 0}
 .pg-btn{padding:5px 10px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:12px;transition:all .15s}
 .pg-btn:hover{background:var(--bg3);color:var(--text)}
-.pg-btn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+.pg-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
 .pg-btn:disabled{opacity:.3;cursor:not-allowed}
 .pg-info{color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;padding:0 8px}
-.modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center}
+.modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(20,40,25,.65);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;width:820px;max-width:96vw;max-height:92vh;overflow-y:auto;animation:slideUp .2s ease}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -249,9 +249,50 @@ table.data-table tr:last-child td{border-bottom:none}
 .chart-card .chart-title{padding-bottom:10px;border-bottom:1px solid var(--border2);margin-bottom:16px}
 .pred-inputs .pred-input-group label{font-weight:500;letter-spacing:.2px}
 .predictor-grid>div:first-child{display:flex;flex-direction:column;gap:16px}
+
+/* ══ PANTALLA DE CARGA DE ARCHIVO ══════════════════════════════════ */
+#upload-screen{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.upload-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:48px 52px;max-width:520px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(30,80,40,.10)}
+.upload-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.upload-subtitle{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:32px}
+.drop-zone{border:2px dashed var(--border);border-radius:12px;padding:40px 24px;cursor:pointer;transition:all .2s;background:var(--bg3);position:relative}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:rgba(42,181,74,.06)}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-icon{font-size:40px;margin-bottom:12px}
+.drop-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);margin-bottom:6px}
+.drop-desc{font-size:12px;color:var(--text3)}
+.drop-desc span{color:var(--accent);font-weight:600}
+.upload-info{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:16px}
+.upload-progress{display:none;margin-top:20px}
+.upload-progress-bar{height:6px;background:var(--bg3);border-radius:20px;overflow:hidden;margin-bottom:8px}
+.upload-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:20px;width:0%;transition:width .3s}
+.upload-status{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace}
+.upload-error{margin-top:14px;padding:10px 14px;background:var(--red-dim);border-left:3px solid var(--red);border-radius:6px;font-size:12px;color:var(--red);display:none;text-align:left}
 </style>
 </head>
 <body>
+
+<!-- ══ PANTALLA DE CARGA DE DATASET ══════════════════════════════ -->
+<div id="upload-screen">
+  <div class="upload-card">
+    <div class="upload-logo">🌱 AgroecologIA</div>
+    <div class="upload-subtitle">v2.0 · Sistema de Análisis de Suelos</div>
+
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept=".csv">
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">Carga tu dataset</div>
+      <div class="drop-desc">Arrastra y suelta el archivo CSV aquí<br>o <span>haz clic para seleccionarlo</span></div>
+    </div>
+    <div class="upload-info">Formato esperado: CSV separado por punto y coma (;) · Codificación UTF-8</div>
+
+    <div class="upload-progress" id="upload-progress">
+      <div class="upload-progress-bar"><div class="upload-progress-fill" id="upload-fill"></div></div>
+      <div class="upload-status" id="upload-status">Procesando...</div>
+    </div>
+    <div class="upload-error" id="upload-error"></div>
+  </div>
+</div>
 
 <nav class="sidebar">
   <div class="sidebar-logo">
@@ -1374,7 +1415,59 @@ function exportData(){
 }
 
 (async function init(){
-  await Promise.all([loadDashboard(),loadFilters()]);
+  // ── Drag & Drop / File Input upload ─────────────────────────────
+  const dropZone   = document.getElementById('drop-zone');
+  const fileInput  = document.getElementById('file-input');
+  const progress   = document.getElementById('upload-progress');
+  const fillBar    = document.getElementById('upload-fill');
+  const statusEl   = document.getElementById('upload-status');
+  const errorEl    = document.getElementById('upload-error');
+
+  async function uploadFile(file){
+    if(!file || !file.name.endsWith('.csv')){
+      errorEl.style.display='block';
+      errorEl.textContent='⚠ Por favor selecciona un archivo CSV válido.';
+      return;
+    }
+    errorEl.style.display='none';
+    progress.style.display='block';
+    fillBar.style.width='20%';
+    statusEl.textContent='Enviando archivo...';
+
+    const formData=new FormData();
+    formData.append('file',file);
+    try{
+      const res=await fetch('/api/upload',{method:'POST',body:formData});
+      fillBar.style.width='70%';
+      statusEl.textContent='Procesando datos...';
+      const data=await res.json();
+      if(!res.ok||data.error){
+        throw new Error(data.error||'Error al procesar el archivo');
+      }
+      fillBar.style.width='100%';
+      statusEl.textContent=`✓ ${data.records} muestras cargadas. Iniciando...`;
+      setTimeout(()=>{
+        document.getElementById('upload-screen').style.display='none';
+        Promise.all([loadDashboard(),loadFilters()]);
+      },700);
+    }catch(e){
+      progress.style.display='none';
+      errorEl.style.display='block';
+      errorEl.textContent='⚠ '+e.message;
+    }
+  }
+
+  // Drag events
+  dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('dragover')});
+  dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop',e=>{
+    e.preventDefault();dropZone.classList.remove('dragover');
+    const file=e.dataTransfer.files[0];
+    if(file) uploadFile(file);
+  });
+  fileInput.addEventListener('change',()=>{
+    if(fileInput.files[0]) uploadFile(fileInput.files[0]);
+  });
 })();
 </script>
 </body>
